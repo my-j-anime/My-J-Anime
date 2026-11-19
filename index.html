@@ -5,11 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MY J ANIME — Sinhala Subtitled Anime Streaming</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- HLS & Plyr.js Custom Video Player -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@500;700&family=Outfit:wght@500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --plyr-color-main: #ec4899;
+      --plyr-video-control-color: #ffffff;
+      --plyr-badge-background: #8b5cf6;
+    }
     body {
       font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif;
       background-color: #06070d;
@@ -45,11 +54,17 @@
     .sinhala-caption {
       font-family: 'Noto Sans Sinhala', sans-serif;
       text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.98), 0px 0px 12px rgba(0, 0, 0, 0.95);
-      background: rgba(6, 7, 13, 0.78);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 5px 16px;
+      background: rgba(6, 7, 13, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      padding: 6px 18px;
       border-radius: 10px;
       display: inline-block;
+      line-height: 1.5;
+    }
+    .plyr {
+      width: 100%;
+      height: 100%;
+      border-radius: 1rem;
     }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #06070d; }
@@ -81,12 +96,10 @@
 
       <!-- Right Controls: History, User Login & Hidden Owner Studio -->
       <div class="flex items-center gap-2 shrink-0">
-        <!-- History Quick Button (Visible when logged in) -->
         <button id="navHistoryBtn" onclick="app.openHistoryPage()" class="hidden bg-violet-500/15 hover:bg-violet-500/25 border border-violet-500/30 text-violet-300 px-3 py-2 rounded-full text-xs font-semibold transition flex items-center gap-1.5">
           <span>🕒</span> <span class="hidden md:inline">History</span>
         </button>
 
-        <!-- User Profile / Sign In Button -->
         <div id="userNavArea">
           <button onclick="app.openUserModal()" class="neon-gradient text-white font-bold px-4 py-2 rounded-full text-xs shadow-lg shadow-pink-500/25 transition flex items-center gap-1.5">
             <span>👤</span> <span>Sign In</span>
@@ -146,7 +159,7 @@
             <span class="w-3 h-3 rounded-full bg-gradient-to-r from-pink-500 to-violet-500 animate-ping"></span>
             <span>Sinhala Subtitled Releases</span>
           </h2>
-          <span class="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1 rounded-full font-semibold">Soft-Sub CC Ready</span>
+          <span class="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1 rounded-full font-semibold">Auto-Sync CC Ready</span>
         </div>
         <div id="gridSinhala" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           <p class="text-sm text-slate-400 col-span-full py-6 text-center">Loading Sinhala subbed collection...</p>
@@ -239,17 +252,20 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-4">
+          <!-- Custom Plyr.js Video Container -->
           <div id="playerContainer" class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/15 shadow-2xl group">
-            <video id="nativeVideo" class="w-full h-full object-contain bg-black hidden" controls playsinline></video>
+            <div id="nativeVideoWrapper" class="w-full h-full hidden">
+              <video id="nativeVideo" class="w-full h-full" controls crossorigin playsinline></video>
+            </div>
             <iframe id="mainPlayer" class="w-full h-full border-0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
             
-            <!-- Sinhala Subtitle Overlay -->
-            <div id="captionOverlay" class="pointer-events-none absolute bottom-12 left-0 right-0 px-4 text-center z-30 transition-opacity">
+            <!-- Sinhala Subtitle Overlay (Works inside Fullscreen too!) -->
+            <div id="captionOverlay" class="pointer-events-none absolute bottom-14 left-0 right-0 px-4 text-center z-40 transition-opacity">
               <span id="captionText" class="sinhala-caption text-base sm:text-xl font-bold text-white hidden"></span>
             </div>
           </div>
 
-          <!-- Iframe Subtitle Timer Bar -->
+          <!-- Iframe Fallback Timer Bar (Shown ONLY if an external iframe is used instead of .m3u8/.mp4) -->
           <div id="iframeSyncBar" class="hidden anime-glass rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs border border-pink-500/30">
             <div class="flex items-center gap-2">
               <button id="subTimerBtn" onclick="app.toggleIframeTimer()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-full transition">
@@ -258,15 +274,10 @@
               <button onclick="app.resetIframeTimer()" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full">↺ Reset</button>
               <span id="timerDisplay" class="font-mono text-pink-300 font-bold px-2">00:00</span>
             </div>
-            <div class="flex items-center gap-1.5">
-              <span class="text-slate-400">Sync:</span>
-              <button onclick="app.adjustOffset(-0.5)" class="bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-full">-0.5s</button>
-              <span id="offsetDisplay" class="font-mono text-amber-300 px-1">0.0s</span>
-              <button onclick="app.adjustOffset(0.5)" class="bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-full">+0.5s</button>
-            </div>
+            <div class="text-[11px] text-amber-300">Iframe Mode (Use .m3u8/.mp4 for 100% Auto-Sync)</div>
           </div>
 
-          <!-- Caption Controls Bar -->
+          <!-- Caption & Sync Controls Bar -->
           <div class="anime-glass rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div class="flex items-center gap-2 font-bold text-pink-400 text-sm" id="watchEpHeading">Episode 1</div>
             <div class="flex flex-wrap items-center gap-2">
@@ -276,8 +287,15 @@
               <button onclick="app.changeFontSize()" class="bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-full">
                 Aa Size
               </button>
+              <!-- Fine-tune Subtitle Timing -->
+              <div class="flex items-center gap-1 bg-white/5 border border-white/10 px-2.5 py-1 rounded-full">
+                <span class="text-slate-400">Sync:</span>
+                <button onclick="app.adjustOffset(-0.5)" class="hover:text-pink-400 px-1 font-bold">-0.5s</button>
+                <span id="offsetDisplay" class="font-mono text-amber-300 px-1">0.0s</span>
+                <button onclick="app.adjustOffset(0.5)" class="hover:text-pink-400 px-1 font-bold">+0.5s</button>
+              </div>
               <label class="cursor-pointer bg-violet-500/20 hover:bg-violet-500/30 border border-violet-500/40 text-violet-300 font-semibold px-3.5 py-1.5 rounded-full transition">
-                📂 Load Local .SRT/.ASS
+                📂 Load .SRT/.ASS
                 <input type="file" accept=".srt,.ass" onchange="app.loadLocalFile(event)" class="hidden" />
               </label>
             </div>
@@ -301,7 +319,7 @@
       <div class="flex justify-between items-center border-b border-white/10 pb-4">
         <div>
           <h2 class="text-xl font-extrabold text-white">Owner Studio Dashboard</h2>
-          <p class="text-xs text-slate-400 mt-0.5">Publish episodes with Sinhala subtitles & manage viewer requests via Anikoto</p>
+          <p class="text-xs text-slate-400 mt-0.5">Publish .m3u8 / .mp4 streams with Auto-Sync Sinhala subtitles</p>
         </div>
         <button onclick="app.goHome()" class="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full text-xs font-semibold transition">← Exit Studio</button>
       </div>
@@ -333,8 +351,8 @@
               <input id="pubEp" type="number" value="1" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-1">Anikoto Iframe / Embed URL</label>
-              <input id="pubUrl" type="text" placeholder="Paste iframe code or URL..." class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
+              <label class="block text-xs font-semibold text-pink-300 mb-1">Direct .M3U8 / .MP4 (or Iframe)</label>
+              <input id="pubUrl" type="text" placeholder="Paste .m3u8 or .mp4 URL..." class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
             </div>
           </div>
 
@@ -348,10 +366,10 @@
           </button>
         </div>
 
-        <!-- Viewer Requests Inbox with 1-Click Anikoto Lookup -->
+        <!-- Viewer Requests Inbox -->
         <div class="anime-glass rounded-3xl p-6 space-y-4 shadow-xl h-fit">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-violet-400 uppercase tracking-wider">2. Viewer Requests (Anikoto Quick-Link)</h3>
+            <h3 class="text-sm font-bold text-violet-400 uppercase tracking-wider">2. Viewer Requests (Anikoto.cz Quick-Link)</h3>
             <button onclick="app.loadRequests()" class="text-xs text-slate-400 hover:text-white">↻ Refresh</button>
           </div>
           <div id="requestsList" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
@@ -370,9 +388,6 @@
   <!-- USER SIGN IN / SIGN UP POPUP MODAL -->
   <div id="modalUserAuth" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
     <div class="anime-glass rounded-3xl p-6 sm:p-8 max-w-sm w-full space-y-5 shadow-2xl border border-pink-500/25 relative overflow-hidden">
-      <div class="absolute -top-16 -right-16 w-36 h-36 bg-pink-500/20 rounded-full blur-2xl pointer-events-none"></div>
-      <div class="absolute -bottom-16 -left-16 w-36 h-36 bg-violet-500/20 rounded-full blur-2xl pointer-events-none"></div>
-
       <div class="flex items-center justify-between relative z-10">
         <div>
           <h3 id="authModalTitle" class="text-xl font-black text-white anime-font">Welcome Back! ✨</h3>
@@ -381,7 +396,6 @@
         <button onclick="app.closeUserModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-slate-400 hover:text-white transition">✕</button>
       </div>
 
-      <!-- Google Sign In Button -->
       <button onclick="app.loginWithGoogle()" class="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-lg transition relative z-10">
         <svg class="w-4 h-4" viewBox="0 0 24 24">
           <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.8C6.2 7.2 8.9 5 12 5z"/>
@@ -398,7 +412,6 @@
         <div class="flex-grow border-t border-white/10"></div>
       </div>
 
-      <!-- Email & Password Form -->
       <div class="space-y-3 relative z-10">
         <input id="userEmailInput" type="email" placeholder="Email address" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-pink-500" />
         <input id="userPassInput" type="password" placeholder="Password (min 6 characters)" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-pink-500" />
@@ -477,18 +490,40 @@
         this.subOffset = 0;
         this.fontSizeIdx = 1;
         this.hls = null;
+        this.plyr = null;
         
         this.iframeTime = 0;
         this.iframeRunning = false;
         this.iframeInterval = null;
 
-        const vid = document.getElementById('nativeVideo');
-        vid.addEventListener('timeupdate', () => this.renderCaptionAtTime(vid.currentTime));
-
+        this.initCustomPlayer();
         this.initAuthListener();
       }
 
-      // Listen for User Sign-In / Sign-Out state & Show Studio ONLY for OWNER_EMAIL
+      // Initialize Plyr.js Custom Video Player & Keep Subtitles inside Fullscreen Container
+      initCustomPlayer() {
+        const vid = document.getElementById('nativeVideo');
+        if (window.Plyr) {
+          this.plyr = new Plyr(vid, {
+            controls: ['play-large', 'rewind', 'play', 'fast-forward', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'fullscreen'],
+            settings: ['speed'],
+            speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
+            keyboard: { focused: true, global: true }
+          });
+
+          // Move Sinhala Caption Overlay inside Plyr wrapper so it appears in Fullscreen too!
+          this.plyr.on('ready', () => {
+            const plyrContainer = document.querySelector('.plyr');
+            const capOverlay = document.getElementById('captionOverlay');
+            if (plyrContainer && capOverlay) {
+              plyrContainer.appendChild(capOverlay);
+            }
+          });
+        }
+
+        vid.addEventListener('timeupdate', () => this.renderCaptionAtTime(vid.currentTime));
+      }
+
       initAuthListener() {
         if (!auth) return;
         onAuthStateChanged(auth, async (user) => {
@@ -1035,8 +1070,11 @@
 
         const custom = this.subMap[`${this.selectedAnime.id}_${epNum}`];
         const iframe = document.getElementById('mainPlayer');
+        const vidWrapper = document.getElementById('nativeVideoWrapper');
         const vid = document.getElementById('nativeVideo');
         const syncBar = document.getElementById('iframeSyncBar');
+        const playerContainer = document.getElementById('playerContainer');
+        const capOverlay = document.getElementById('captionOverlay');
 
         this.activeSubs = custom?.subData ? this.parseSubtitles(custom.subData) : [];
 
@@ -1047,11 +1085,15 @@
             if (m) targetUrl = m[1];
           }
 
-          if (targetUrl.endsWith('.mp4') || targetUrl.includes('.m3u8')) {
+          // Check if direct .mp4 or .m3u8 stream -> Use Plyr.js Custom Video Player with 100% Auto-Sync
+          if (targetUrl.includes('.mp4') || targetUrl.includes('.m3u8')) {
             iframe.classList.add('hidden');
             iframe.src = '';
             syncBar.classList.add('hidden');
-            vid.classList.remove('hidden');
+            vidWrapper.classList.remove('hidden');
+
+            const plyrEl = document.querySelector('.plyr');
+            if (plyrEl && capOverlay) plyrEl.appendChild(capOverlay);
 
             if (targetUrl.includes('.m3u8') && Hls.isSupported()) {
               if (this.hls) this.hls.destroy();
@@ -1062,9 +1104,12 @@
               vid.src = targetUrl;
             }
           } else {
-            vid.classList.add('hidden');
-            vid.pause();
+            // Fallback to Iframe Embed
+            vidWrapper.classList.add('hidden');
+            if (this.plyr) this.plyr.pause();
             vid.src = '';
+            if (playerContainer && capOverlay) playerContainer.appendChild(capOverlay);
+
             iframe.classList.remove('hidden');
             iframe.src = targetUrl;
             
@@ -1105,8 +1150,8 @@
         document.getElementById('viewStudio').classList.add('hidden');
         document.getElementById('viewHome').classList.remove('hidden');
         document.getElementById('mainPlayer').src = '';
+        if (this.plyr) this.plyr.pause();
         const vid = document.getElementById('nativeVideo');
-        vid.pause();
         vid.src = '';
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -1168,7 +1213,7 @@
                     🔍 Find on Anikoto
                   </a>
                   <button onclick="app.studioPick(${r.anilistId}, '${safeName}', '${r.posterUrl || ''}')" class="bg-pink-600/25 border border-pink-500/30 text-pink-300 hover:bg-pink-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition">
-                    + Paste Iframe & Publish
+                    + Paste Stream & Publish
                   </button>
                 </div>
               </div>
@@ -1214,7 +1259,7 @@
         const videoUrl = document.getElementById('pubUrl').value;
         const fileInput = document.getElementById('pubSubFile');
 
-        if (!id || !videoUrl) return alert("Please select series and provide a video/iframe URL.");
+        if (!id || !videoUrl) return alert("Please select series and provide a video/stream URL.");
 
         const btn = document.getElementById('publishBtn');
         btn.disabled = true;
