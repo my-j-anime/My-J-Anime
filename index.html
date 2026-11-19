@@ -6,6 +6,7 @@
   <title>MY J ANIME — Sinhala Subtitled Anime Streaming</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Sinhala:wght@500;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
@@ -681,6 +682,13 @@
               <div class="flex gap-1.5">
                 <input id="geminiApiKeyInput" type="password" placeholder="AIzaSy..." class="flex-1 bg-[#151822] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-purple-400" />
                 <button onclick="app.saveGeminiKey()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">Save Key</button>
+              </div>
+            </div>
+			<div>
+              <label class="block text-[10px] font-bold text-slate-400 mb-1">1B. Free Subdl.com API Key (Auto-Fetch English Subs)</label>
+              <div class="flex gap-1.5">
+                <input id="subdlApiKeyInput" type="password" placeholder="Subdl API Key..." class="flex-1 bg-[#151822] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-sky-400" />
+                <button onclick="app.saveSubdlKey()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">Save Subdl</button>
               </div>
             </div>
 
@@ -2457,7 +2465,7 @@
         }
       }
 
-      // ==========================================
+     // ==========================================
       // 🤖 BUILT-IN AI AUTO-SUBTITLE BOT ENGINE
       // ==========================================
       saveGeminiKey() {
@@ -2467,10 +2475,21 @@
         alert("Gemini API Key saved securely in your browser!");
       }
 
+      saveSubdlKey() {
+        const key = document.getElementById('subdlApiKeyInput').value.trim();
+        if (!key) return alert("Please enter a valid Subdl API Key.");
+        localStorage.setItem('myjanime_subdl_key', key);
+        alert("Subdl API Key saved securely in your browser!");
+      }
+
       populateAiEpisodeDropdown(collections) {
         const savedKey = localStorage.getItem('myjanime_gemini_key');
         const keyInput = document.getElementById('geminiApiKeyInput');
         if (savedKey && keyInput) keyInput.value = savedKey;
+
+        const savedSubdl = localStorage.getItem('myjanime_subdl_key');
+        const subdlInput = document.getElementById('subdlApiKeyInput');
+        if (savedSubdl && subdlInput) subdlInput.value = savedSubdl;
 
         const sel = document.getElementById('aiTargetDocSelect');
         if (!sel) return;
@@ -2484,6 +2503,38 @@
         sel.innerHTML = opts;
       }
 
+      async autoFetchEnglishSubtitle(animeTitle, epNum) {
+        const subdlKey = document.getElementById('subdlApiKeyInput')?.value.trim() || localStorage.getItem('myjanime_subdl_key');
+        if (!subdlKey) return null;
+
+        try {
+          const searchUrl = `https://api.subdl.com/api/v1/subtitles?api_key=${encodeURIComponent(subdlKey)}&film_name=${encodeURIComponent(animeTitle)}&languages=EN&episode_number=${epNum}&type=tv`;
+          const res = await fetch(searchUrl);
+          const data = await res.json();
+
+          if (data?.status && data?.subtitles?.length > 0) {
+            const subItem = data.subtitles[0];
+            const zipDownloadUrl = `https://dl.subdl.com${subItem.url}`;
+
+            // Download zip via CORS proxy to extract .srt/.ass inside browser
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(zipDownloadUrl)}`;
+            const zipRes = await fetch(proxyUrl);
+            if (!zipRes.ok) return null;
+
+            const blob = await zipRes.blob();
+            const zip = await JSZip.loadAsync(blob);
+
+            for (const filename of Object.keys(zip.files)) {
+              if (filename.toLowerCase().endsWith('.srt') || filename.toLowerCase().endsWith('.ass')) {
+                return await zip.files[filename].async('string');
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("Subdl fetch warning:", e);
+        }
+        return null;
+      }
       async autoFetchEnglishSubtitle(animeTitle, epNum) {
         try {
           const query = encodeURIComponent(`${animeTitle} S01E${String(epNum).padStart(2, '0')}`);
