@@ -1152,7 +1152,7 @@
 
           listEl.innerHTML = reqs.map(r => {
             const safeName = r.name.replace(/'/g, "\\'");
-            const anikotoSearchUrl = `https://anikoto.to/filter?keyword=${encodeURIComponent(r.name)}`;
+            const anikotoSearchUrl = `https://anikoto.cz/filter?keyword=${encodeURIComponent(r.name)}`;
             return `
               <div class="bg-[#0b0e18] border border-white/10 p-3.5 rounded-2xl space-y-2.5">
                 <div class="flex items-center justify-between gap-2">
