@@ -145,7 +145,7 @@
             </div>
           </div>
 
-          <!-- Iframe Subtitle Timer Bar (For Embed players like Streamwish/Abyss) -->
+          <!-- Iframe Subtitle Timer Bar -->
           <div id="iframeSyncBar" class="hidden custom-glass rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs border border-indigo-500/30">
             <div class="flex items-center gap-2">
               <button id="subTimerBtn" onclick="app.toggleIframeTimer()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg transition">
@@ -279,21 +279,24 @@
   <!-- App Core Engine -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, collection, doc, setDoc, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const fbCfg = {
-      apiKey: "AIzaSyAdU096oksFRbZIsoe99MjQoVZz4Ydzo-s",
-      authDomain: "my-j-anime-996cb.firebaseapp.com",
-      projectId: "my-j-anime-996cb",
-      storageBucket: "my-j-anime-996cb.firebasestorage.app",
-      messagingSenderId: "747829682593",
-      appId: "1:747829682593:web:687e1835e28ec80c7eabe0"
+      apiKey: "AIzaSyDiCIxkg8RP0lfJgafuP0f4ZkFZ0jy5UmE",
+      authDomain: "my-j-anime.firebaseapp.com",
+      projectId: "my-j-anime",
+      storageBucket: "my-j-anime.firebasestorage.app",
+      messagingSenderId: "1037592243486",
+      appId: "1:1037592243486:web:f1ad1e979c702f8969ad0f",
+      measurementId: "G-000QB7VJ7H"
     };
 
     let database = null;
     try {
       const appInst = initializeApp(fbCfg);
+      getAnalytics(appInst);
       signInAnonymously(getAuth(appInst)).catch(() => {});
       database = getFirestore(appInst);
     } catch (e) {
@@ -310,23 +313,19 @@
         this.fontSizeIdx = 1;
         this.hls = null;
         
-        // Manual timer for iframe embeds
         this.iframeTime = 0;
         this.iframeRunning = false;
         this.iframeInterval = null;
 
-        // Attach native video timeupdate listener
         const vid = document.getElementById('nativeVideo');
         vid.addEventListener('timeupdate', () => this.renderCaptionAtTime(vid.currentTime));
       }
 
-      // Parse SRT and ASS subtitle formats
       parseSubtitles(rawText) {
         if (!rawText) return [];
         const cues = [];
         const lines = rawText.replace(/\r\n/g, '\n').split('\n');
 
-        // Check if ASS format
         if (rawText.includes('[Events]') || rawText.includes('Dialogue:')) {
           for (const line of lines) {
             if (line.startsWith('Dialogue:')) {
@@ -335,7 +334,7 @@
                 const start = this.timeToSec(parts[1].trim());
                 const end = this.timeToSec(parts[2].trim());
                 const text = parts.slice(9).join(',')
-                  .replace(/\{[^}]*\}/g, '') // remove ASS override tags like {\pos...}
+                  .replace(/\{[^}]*\}/g, '')
                   .replace(/\\N/g, '<br>')
                   .replace(/\\n/g, '<br>')
                   .trim();
@@ -344,7 +343,6 @@
             }
           }
         } else {
-          // Parse SRT format
           const blocks = rawText.trim().split(/\n\s*\n/);
           for (const block of blocks) {
             const bLines = block.split('\n');
@@ -640,7 +638,6 @@
         const vid = document.getElementById('nativeVideo');
         const syncBar = document.getElementById('iframeSyncBar');
 
-        // Load Sinhala Subtitle cues if stored in DB
         this.activeSubs = custom?.subData ? this.parseSubtitles(custom.subData) : [];
 
         if (custom?.videoUrl) {
@@ -650,7 +647,6 @@
             if (m) targetUrl = m[1];
           }
 
-          // Check if direct MP4 or HLS m3u8 stream
           if (targetUrl.endsWith('.mp4') || targetUrl.includes('.m3u8')) {
             iframe.classList.add('hidden');
             iframe.src = '';
@@ -666,7 +662,6 @@
               vid.src = targetUrl;
             }
           } else {
-            // Iframe Embed mode
             vid.classList.add('hidden');
             vid.pause();
             vid.src = '';
