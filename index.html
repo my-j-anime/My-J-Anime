@@ -3,84 +3,148 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ANISHIFT — Watch Anime with Sinhala Subtitles</title>
+  <title>MY J ANIME — Sinhala Subtitled Anime Streaming</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@500;700&family=Outfit:wght@500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body {
       font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif;
-      background-color: #07090e;
-      color: #f1f5f9;
+      background-color: #06070d;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(139, 92, 246, 0.12), transparent 35%),
+        radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.10), transparent 35%);
+      color: #f8fafc;
     }
-    .custom-glass {
-      background: rgba(15, 20, 30, 0.85);
-      backdrop-filter: blur(16px);
+    h1, h2, h3, .anime-font {
+      font-family: 'Outfit', 'Noto Sans Sinhala', sans-serif;
+    }
+    .anime-glass {
+      background: rgba(14, 17, 29, 0.78);
+      backdrop-filter: blur(18px);
       border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .anime-card {
+      background: rgba(16, 20, 34, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .anime-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(236, 72, 153, 0.55);
+      box-shadow: 0 12px 30px -10px rgba(236, 72, 153, 0.35);
+    }
+    .neon-gradient {
+      background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+    }
+    .neon-gradient:hover {
+      background: linear-gradient(135deg, #f43f5e 0%, #7c3aed 100%);
     }
     .sinhala-caption {
       font-family: 'Noto Sans Sinhala', sans-serif;
-      text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.95), 0px 0px 10px rgba(0, 0, 0, 0.9);
-      background: rgba(0, 0, 0, 0.65);
-      padding: 4px 14px;
-      border-radius: 8px;
+      text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.98), 0px 0px 12px rgba(0, 0, 0, 0.95);
+      background: rgba(6, 7, 13, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 5px 16px;
+      border-radius: 10px;
       display: inline-block;
     }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #07090e; }
-    ::-webkit-scrollbar-thumb { background: #1a2236; border-radius: 999px; }
+    ::-webkit-scrollbar-track { background: #06070d; }
+    ::-webkit-scrollbar-thumb { background: #262b42; border-radius: 999px; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+<body class="min-h-screen flex flex-col selection:bg-pink-500 selection:text-white">
 
   <!-- Navigation Bar -->
-  <header class="sticky top-0 z-50 custom-glass border-b border-white/10 shadow-lg">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-      <div onclick="app.goHome()" class="flex items-center gap-2 cursor-pointer group">
-        <span class="text-xl font-black tracking-wider text-white">≡ <span class="text-indigo-500 group-hover:text-indigo-400 transition">ANISHIFT</span></span>
+  <header class="sticky top-0 z-40 anime-glass border-b border-white/10 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <!-- Brand Logo -->
+      <div onclick="app.goHome()" class="flex items-center gap-2.5 cursor-pointer group shrink-0">
+        <div class="w-9 h-9 rounded-xl neon-gradient flex items-center justify-center shadow-lg shadow-pink-500/30 font-black text-white text-lg">
+          J
+        </div>
+        <div class="leading-tight">
+          <span class="text-lg font-black tracking-wider text-white anime-font block">MY <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">J ANIME</span></span>
+          <span class="text-[10px] text-slate-400 tracking-widest uppercase block -mt-1">Sinhala Sub Hub</span>
+        </div>
       </div>
 
       <!-- Search Bar -->
-      <div class="flex-1 max-w-xl relative">
-        <input id="searchInput" type="text" placeholder="Search anime series (e.g. Naruto, Bleach)..." 
+      <div class="flex-1 max-w-md relative">
+        <input id="searchInput" type="text" placeholder="Search anime (e.g. Solo Leveling, Bleach)..." 
           onkeydown="if(event.key==='Enter') app.searchAnime()"
-          class="w-full bg-[#111726] border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition shadow-inner" />
+          class="w-full bg-[#0b0e18] border border-white/10 rounded-full px-4 py-2 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-pink-500 transition shadow-inner" />
       </div>
 
-      <!-- Owner Studio Access -->
-      <div>
-        <button onclick="app.openLogin()" class="bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
-          ⚙ Owner Studio
+      <!-- Right Controls: User Login & Owner Studio -->
+      <div class="flex items-center gap-2 shrink-0">
+        <!-- User Profile / Sign In Button -->
+        <div id="userNavArea">
+          <button onclick="app.openUserModal()" class="neon-gradient text-white font-bold px-4 py-2 rounded-full text-xs shadow-lg shadow-pink-500/25 transition flex items-center gap-1.5">
+            <span>👤</span> <span>Sign In</span>
+          </button>
+        </div>
+
+        <!-- Owner Studio -->
+        <button onclick="app.openLogin()" title="Owner Studio" class="bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-500/40 text-amber-300 px-3 py-2 rounded-full text-xs font-semibold transition flex items-center gap-1">
+          ⚙ <span class="hidden sm:inline">Studio</span>
         </button>
       </div>
     </div>
   </header>
 
   <!-- Main View Area -->
-  <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6 space-y-8">
+  <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6 space-y-10">
 
     <!-- HOME PAGE -->
-    <div id="viewHome" class="space-y-8">
+    <div id="viewHome" class="space-y-10">
+      
+      <!-- Featured Anime Hero Banner -->
+      <div id="heroBanner" class="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl min-h-[280px] sm:min-h-[340px] flex items-end p-6 sm:p-10 bg-[#0d101d]">
+        <div id="heroBg" class="absolute inset-0 bg-cover bg-center opacity-35 scale-105 transition-all duration-700"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-[#06070d] via-[#06070d]/70 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-[#06070d] via-[#06070d]/60 to-transparent"></div>
+
+        <div class="relative z-10 max-w-2xl space-y-3">
+          <div class="inline-flex items-center gap-2 bg-pink-500/20 border border-pink-500/30 text-pink-300 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            ✨ Featured Spotlight
+          </div>
+          <h1 id="heroTitle" class="text-2xl sm:text-4xl font-black text-white leading-tight">Loading Spotlight...</h1>
+          <p id="heroDesc" class="text-xs sm:text-sm text-slate-300 line-clamp-2 leading-relaxed">Discover trending anime series with Sinhala soft-subtitles.</p>
+          <div class="pt-2 flex items-center gap-3">
+            <button id="heroActionBtn" class="neon-gradient text-white font-bold px-6 py-2.5 rounded-full text-xs sm:text-sm shadow-lg shadow-pink-500/30 transition">
+              Explore Series →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sinhala Subtitled Section -->
       <section class="space-y-4">
         <div class="flex items-center justify-between">
-          <h2 class="text-lg font-extrabold text-white tracking-wide flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Sinhala Subtitled Anime
+          <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-wide flex items-center gap-2.5">
+            <span class="w-3 h-3 rounded-full bg-gradient-to-r from-pink-500 to-violet-500 animate-ping"></span>
+            <span>Sinhala Subtitled Releases</span>
           </h2>
-          <span class="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full font-medium">Soft-Sub CC Ready</span>
+          <span class="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1 rounded-full font-semibold">Soft-Sub CC Ready</span>
         </div>
         <div id="gridSinhala" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <p class="text-sm text-slate-400 col-span-full py-4 text-center">Loading community subbed library...</p>
+          <p class="text-sm text-slate-400 col-span-full py-6 text-center">Loading Sinhala subbed collection...</p>
         </div>
       </section>
 
+      <!-- Trending Catalog -->
       <section class="space-y-4">
         <div class="flex items-center justify-between">
-          <h2 id="catalogTitle" class="text-lg font-extrabold text-white tracking-wide">Trending Catalog</h2>
+          <h2 id="catalogTitle" class="text-lg sm:text-xl font-extrabold text-white tracking-wide flex items-center gap-2">
+            <span>🔥 Trending Anime Catalog</span>
+          </h2>
         </div>
         <div id="gridCatalog" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <p class="text-sm text-slate-400 col-span-full py-4 text-center">Connecting to AniList Network...</p>
+          <p class="text-sm text-slate-400 col-span-full py-6 text-center">Connecting to AniList Network...</p>
         </div>
       </section>
     </div>
@@ -88,38 +152,38 @@
     <!-- DETAILS PAGE -->
     <div id="viewDetails" class="hidden space-y-8">
       <div class="text-xs text-slate-400 flex items-center gap-2">
-        <span onclick="app.goHome()" class="cursor-pointer hover:text-white transition">Home</span> › <span id="detCrumb" class="text-slate-200 font-medium">Anime Details</span>
+        <span onclick="app.goHome()" class="cursor-pointer hover:text-pink-400 transition">Home</span> › <span id="detCrumb" class="text-slate-200 font-medium">Anime Details</span>
       </div>
 
-      <div class="custom-glass rounded-2xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-4 gap-8 relative overflow-hidden shadow-2xl">
-        <div class="absolute inset-0 bg-cover bg-center opacity-10 filter blur-3xl pointer-events-none" id="detBg"></div>
+      <div class="anime-glass rounded-3xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-4 gap-8 relative overflow-hidden shadow-2xl">
+        <div class="absolute inset-0 bg-cover bg-center opacity-15 filter blur-2xl pointer-events-none" id="detBg"></div>
         
-        <div class="aspect-[3/4] rounded-xl overflow-hidden bg-slate-900 border border-white/10 shadow-2xl relative z-10">
+        <div class="aspect-[3/4] rounded-2xl overflow-hidden bg-slate-900 border border-white/15 shadow-2xl relative z-10">
           <img id="detPoster" src="" class="w-full h-full object-cover" />
         </div>
 
         <div class="md:col-span-3 space-y-4 relative z-10 flex flex-col justify-center">
           <div>
             <h1 id="detTitle" class="text-2xl sm:text-4xl font-black text-white">Title</h1>
-            <p id="detSubTitle" class="text-xs text-slate-400 mt-1">Alternative: —</p>
+            <p id="detSubTitle" class="text-xs text-pink-300/80 mt-1">Alternative: —</p>
           </div>
 
-          <div class="flex flex-wrap items-center gap-3 text-xs text-slate-300">
-            <span id="detType" class="bg-white/10 px-2.5 py-1 rounded-md font-semibold">TV</span>
-            <span id="detYear" class="bg-white/10 px-2.5 py-1 rounded-md">2026</span>
-            <span id="detEps" class="bg-white/10 px-2.5 py-1 rounded-md">12 Eps</span>
-            <span id="detScore" class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-md font-bold">★ 8.5</span>
+          <div class="flex flex-wrap items-center gap-2.5 text-xs text-slate-200">
+            <span id="detType" class="bg-violet-500/20 border border-violet-500/30 text-violet-200 px-3 py-1 rounded-full font-semibold">TV</span>
+            <span id="detYear" class="bg-white/10 px-3 py-1 rounded-full">2026</span>
+            <span id="detEps" class="bg-white/10 px-3 py-1 rounded-full">12 Eps</span>
+            <span id="detScore" class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-full font-bold">★ 8.5</span>
           </div>
 
           <p id="detDesc" class="text-sm text-slate-300 leading-relaxed max-w-4xl"></p>
 
           <!-- Dynamic Action Buttons -->
-          <div class="flex flex-wrap items-center gap-3 pt-2">
-            <button id="watchNowBtn" onclick="app.startWatchSession()" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition">
+          <div class="flex flex-wrap items-center gap-3 pt-3">
+            <button id="watchNowBtn" onclick="app.startWatchSession()" class="hidden neon-gradient text-white font-bold px-7 py-3 rounded-full text-sm flex items-center gap-2 shadow-lg shadow-pink-500/30 transition">
               ▶ Watch Now (Sinhala Sub)
             </button>
-            <button id="reqBtn" onclick="app.requestSub()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 transition shadow-lg shadow-rose-600/20">
-              🔴 Request Subtitle
+            <button id="reqBtn" onclick="app.requestSub()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-6 py-3 rounded-full text-sm flex items-center gap-2 transition shadow-lg shadow-rose-600/25">
+              🔴 Request Sinhala Subtitle
             </button>
           </div>
         </div>
@@ -129,13 +193,12 @@
     <!-- WATCH PLAYER PAGE -->
     <div id="viewWatch" class="hidden space-y-6">
       <div class="text-xs text-slate-400 flex items-center gap-2">
-        <span onclick="app.goHome()" class="cursor-pointer hover:text-white transition">Home</span> › <span onclick="app.openDetails()" class="cursor-pointer hover:text-white transition" id="watchCrumbAnime">Anime</span> › <span id="watchCrumbEp" class="text-slate-200 font-medium">Episode 1</span>
+        <span onclick="app.goHome()" class="cursor-pointer hover:text-pink-400 transition">Home</span> › <span onclick="app.openDetails()" class="cursor-pointer hover:text-pink-400 transition" id="watchCrumbAnime">Anime</span> › <span id="watchCrumbEp" class="text-slate-200 font-medium">Episode 1</span>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-4">
-          <!-- Video Container with Soft-Sub Overlay -->
-          <div id="playerContainer" class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl group">
+          <div id="playerContainer" class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/15 shadow-2xl group">
             <video id="nativeVideo" class="w-full h-full object-contain bg-black hidden" controls playsinline></video>
             <iframe id="mainPlayer" class="w-full h-full border-0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
             
@@ -146,33 +209,33 @@
           </div>
 
           <!-- Iframe Subtitle Timer Bar -->
-          <div id="iframeSyncBar" class="hidden custom-glass rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs border border-indigo-500/30">
+          <div id="iframeSyncBar" class="hidden anime-glass rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs border border-pink-500/30">
             <div class="flex items-center gap-2">
-              <button id="subTimerBtn" onclick="app.toggleIframeTimer()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg transition">
+              <button id="subTimerBtn" onclick="app.toggleIframeTimer()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-full transition">
                 ▶ Start Sub Sync
               </button>
-              <button onclick="app.resetIframeTimer()" class="bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-lg">↺ Reset (00:00)</button>
-              <span id="timerDisplay" class="font-mono text-indigo-300 font-bold px-2">00:00</span>
+              <button onclick="app.resetIframeTimer()" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full">↺ Reset</button>
+              <span id="timerDisplay" class="font-mono text-pink-300 font-bold px-2">00:00</span>
             </div>
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400">Sync:</span>
-              <button onclick="app.adjustOffset(-0.5)" class="bg-white/10 hover:bg-white/20 px-2 py-1 rounded">-0.5s</button>
+              <button onclick="app.adjustOffset(-0.5)" class="bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-full">-0.5s</button>
               <span id="offsetDisplay" class="font-mono text-amber-300 px-1">0.0s</span>
-              <button onclick="app.adjustOffset(0.5)" class="bg-white/10 hover:bg-white/20 px-2 py-1 rounded">+0.5s</button>
+              <button onclick="app.adjustOffset(0.5)" class="bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-full">+0.5s</button>
             </div>
           </div>
 
           <!-- Caption Controls Bar -->
-          <div class="custom-glass rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div class="flex items-center gap-2 font-bold text-indigo-400 text-sm" id="watchEpHeading">Episode 1</div>
+          <div class="anime-glass rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2 font-bold text-pink-400 text-sm" id="watchEpHeading">Episode 1</div>
             <div class="flex flex-wrap items-center gap-2">
-              <button id="ccToggleBtn" onclick="app.toggleCC()" class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold px-3 py-1.5 rounded-lg transition">
+              <button id="ccToggleBtn" onclick="app.toggleCC()" class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold px-3.5 py-1.5 rounded-full transition">
                 CC: ON
               </button>
-              <button onclick="app.changeFontSize()" class="bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1.5 rounded-lg">
+              <button onclick="app.changeFontSize()" class="bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-full">
                 Aa Size
               </button>
-              <label class="cursor-pointer bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-300 font-semibold px-3 py-1.5 rounded-lg transition">
+              <label class="cursor-pointer bg-violet-500/20 hover:bg-violet-500/30 border border-violet-500/40 text-violet-300 font-semibold px-3.5 py-1.5 rounded-full transition">
                 📂 Load Local .SRT/.ASS
                 <input type="file" accept=".srt,.ass" onchange="app.loadLocalFile(event)" class="hidden" />
               </label>
@@ -181,9 +244,9 @@
         </div>
 
         <div class="space-y-4">
-          <div class="custom-glass rounded-xl p-4 space-y-3 shadow-lg">
-            <div class="flex items-center justify-between border-b border-white/10 pb-2">
-              <span class="text-xs font-bold text-slate-300">Published Episodes</span>
+          <div class="anime-glass rounded-2xl p-4 space-y-3 shadow-lg">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+              <span class="text-xs font-bold text-slate-200">Published Episodes</span>
               <span id="watchEpCount" class="text-xs text-emerald-400 font-semibold">Available</span>
             </div>
             <div id="episodeButtonsList" class="grid grid-cols-5 gap-2 max-h-[420px] overflow-y-auto pr-1"></div>
@@ -197,20 +260,20 @@
       <div class="flex justify-between items-center border-b border-white/10 pb-4">
         <div>
           <h2 class="text-xl font-extrabold text-white">Owner Studio Dashboard</h2>
-          <p class="text-xs text-slate-400 mt-0.5">Publish episodes with Sinhala subtitles & manage requests</p>
+          <p class="text-xs text-slate-400 mt-0.5">Publish episodes with Sinhala subtitles & manage viewer requests</p>
         </div>
-        <button onclick="app.goHome()" class="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl text-xs font-semibold transition">← Exit Studio</button>
+        <button onclick="app.goHome()" class="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full text-xs font-semibold transition">← Exit Studio</button>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Publish Form -->
-        <div class="custom-glass rounded-2xl p-6 space-y-4 shadow-xl h-fit">
-          <h3 class="text-sm font-bold text-indigo-400 uppercase tracking-wider">1. Publish Episode + Sinhala Subtitle</h3>
+        <div class="anime-glass rounded-3xl p-6 space-y-4 shadow-xl h-fit">
+          <h3 class="text-sm font-bold text-pink-400 uppercase tracking-wider">1. Publish Episode + Sinhala Subtitle</h3>
           <div>
             <label class="block text-xs font-semibold text-slate-400 mb-1">Search Series on AniList</label>
             <div class="flex gap-2">
-              <input id="studioQuery" type="text" placeholder="Type name..." class="w-full bg-[#07090e] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" />
-              <button onclick="app.studioSearch()" class="bg-indigo-600 hover:bg-indigo-500 font-bold px-5 py-2.5 rounded-xl text-xs transition">Search</button>
+              <input id="studioQuery" type="text" placeholder="Type name..." class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
+              <button onclick="app.studioSearch()" class="neon-gradient font-bold px-5 py-2.5 rounded-xl text-xs transition">Search</button>
             </div>
             <div id="studioResults" class="mt-2 space-y-1.5 max-h-40 overflow-y-auto pr-1"></div>
           </div>
@@ -220,24 +283,23 @@
 
           <div>
             <label class="block text-xs font-semibold text-slate-400 mb-1">Target Anime</label>
-            <input id="pubTitle" type="text" readonly class="w-full bg-[#07090e]/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-300 cursor-not-allowed" />
+            <input id="pubTitle" type="text" readonly class="w-full bg-[#06070d]/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-300 cursor-not-allowed" />
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-semibold text-slate-400 mb-1">Episode No.</label>
-              <input id="pubEp" type="number" value="1" class="w-full bg-[#07090e] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" />
+              <input id="pubEp" type="number" value="1" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-400 mb-1">Stream / Embed URL</label>
-              <input id="pubUrl" type="text" placeholder="https://... (.mp4, .m3u8, or iframe)" class="w-full bg-[#07090e] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" />
+              <input id="pubUrl" type="text" placeholder="https://... (.mp4, .m3u8, or iframe)" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
             </div>
           </div>
 
-          <!-- Sinhala Subtitle Upload Input -->
           <div>
             <label class="block text-xs font-semibold text-emerald-400 mb-1">Upload Sinhala Subtitle File (.SRT or .ASS)</label>
-            <input id="pubSubFile" type="file" accept=".srt,.ass" class="w-full bg-[#07090e] border border-emerald-500/30 rounded-xl px-3 py-2 text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500" />
+            <input id="pubSubFile" type="file" accept=".srt,.ass" class="w-full bg-[#06070d] border border-emerald-500/30 rounded-xl px-3 py-2 text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500" />
           </div>
 
           <button id="publishBtn" onclick="app.publishEp()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-600/20">
@@ -246,9 +308,9 @@
         </div>
 
         <!-- Viewer Requests Inbox -->
-        <div class="custom-glass rounded-2xl p-6 space-y-4 shadow-xl h-fit">
+        <div class="anime-glass rounded-3xl p-6 space-y-4 shadow-xl h-fit">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-rose-400 uppercase tracking-wider">2. Viewer Subtitle Requests</h3>
+            <h3 class="text-sm font-bold text-violet-400 uppercase tracking-wider">2. Viewer Subtitle Requests</h3>
             <button onclick="app.loadRequests()" class="text-xs text-slate-400 hover:text-white">↻ Refresh</button>
           </div>
           <div id="requestsList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1">
@@ -260,18 +322,66 @@
   </main>
 
   <!-- Footer -->
-  <footer class="border-t border-white/10 bg-[#040508] py-6 mt-12 text-center text-xs text-slate-500">
-    <p>© 2026 ANISHIFT. All Rights Reserved. Powered by Firebase & AniList API.</p>
+  <footer class="border-t border-white/10 bg-[#040509] py-6 mt-12 text-center text-xs text-slate-500">
+    <p>© 2026 MY J ANIME. Sinhala Anime Streaming Community.</p>
   </footer>
 
-  <!-- Login Modal -->
+  <!-- USER SIGN IN / SIGN UP POPUP MODAL -->
+  <div id="modalUserAuth" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="anime-glass rounded-3xl p-6 sm:p-8 max-w-sm w-full space-y-5 shadow-2xl border border-pink-500/25 relative overflow-hidden">
+      <div class="absolute -top-16 -right-16 w-36 h-36 bg-pink-500/20 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="absolute -bottom-16 -left-16 w-36 h-36 bg-violet-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+      <div class="flex items-center justify-between relative z-10">
+        <div>
+          <h3 id="authModalTitle" class="text-xl font-black text-white anime-font">Welcome Back! ✨</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Sign in to request Sinhala subtitles & sync favorites</p>
+        </div>
+        <button onclick="app.closeUserModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-slate-400 hover:text-white transition">✕</button>
+      </div>
+
+      <!-- Google Sign In Button -->
+      <button onclick="app.loginWithGoogle()" class="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-lg transition relative z-10">
+        <svg class="w-4 h-4" viewBox="0 0 24 24">
+          <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.8C6.2 7.2 8.9 5 12 5z"/>
+          <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.5H12v4.8h6.5c-.3 1.5-1.1 2.8-2.4 3.6l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+          <path fill="#FBBC05" d="M5.3 14.8c-.2-.8-.4-1.6-.4-2.5s.2-1.7.4-2.5L1.6 7C.6 9 0 11.2 0 13.5s.6 4.5 1.6 6.5l3.7-2.8z"/>
+          <path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5l-3.7 2.8C3.5 21.4 7.4 24 12 24z"/>
+        </svg>
+        <span>Continue with Google</span>
+      </button>
+
+      <div class="relative flex items-center py-1 z-10">
+        <div class="flex-grow border-t border-white/10"></div>
+        <span class="flex-shrink mx-3 text-[11px] text-slate-500 uppercase">or with email</span>
+        <div class="flex-grow border-t border-white/10"></div>
+      </div>
+
+      <!-- Email & Password Form -->
+      <div class="space-y-3 relative z-10">
+        <input id="userEmailInput" type="email" placeholder="Email address" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-pink-500" />
+        <input id="userPassInput" type="password" placeholder="Password (min 6 characters)" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-pink-500" />
+        
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button onclick="app.loginWithEmail()" class="neon-gradient text-white font-bold py-2.5 rounded-xl text-xs shadow-lg shadow-pink-500/25 transition">
+            Sign In
+          </button>
+          <button onclick="app.registerWithEmail()" class="bg-white/10 hover:bg-white/15 border border-white/10 text-white font-bold py-2.5 rounded-xl text-xs transition">
+            Create Account
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Owner Login Modal -->
   <div id="modalLogin" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="custom-glass rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-2xl border border-white/10">
-      <h3 class="text-lg font-bold text-white">Owner Passcode Verification</h3>
-      <input id="passInput" type="password" placeholder="Passcode (1234)" class="w-full bg-[#07090e] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" />
+    <div class="anime-glass rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl border border-amber-500/25">
+      <h3 class="text-lg font-bold text-white">Owner Studio Verification</h3>
+      <input id="passInput" type="password" placeholder="Passcode (1234)" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500" />
       <div class="flex justify-end gap-2 pt-2">
         <button onclick="document.getElementById('modalLogin').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs font-medium bg-white/5 hover:bg-white/10 transition">Cancel</button>
-        <button onclick="app.verifyPass()" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 transition shadow-lg shadow-indigo-600/30">Verify</button>
+        <button onclick="app.verifyPass()" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition shadow-lg">Verify</button>
       </div>
     </div>
   </div>
@@ -280,7 +390,16 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { 
+      getAuth, 
+      signInAnonymously, 
+      GoogleAuthProvider, 
+      signInWithPopup, 
+      signInWithEmailAndPassword, 
+      createUserWithEmailAndPassword, 
+      onAuthStateChanged, 
+      signOut 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, collection, doc, setDoc, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const fbCfg = {
@@ -294,18 +413,20 @@
     };
 
     let database = null;
+    let auth = null;
     try {
       const appInst = initializeApp(fbCfg);
       getAnalytics(appInst);
-      signInAnonymously(getAuth(appInst)).catch(() => {});
+      auth = getAuth(appInst);
       database = getFirestore(appInst);
     } catch (e) {
-      console.warn("DB Warning:", e);
+      console.warn("Firebase Warning:", e);
     }
 
     class AnishiftCore {
       constructor() {
         this.selectedAnime = null;
+        this.currentUser = null;
         this.subMap = {};
         this.activeSubs = [];
         this.ccEnabled = true;
@@ -319,6 +440,87 @@
 
         const vid = document.getElementById('nativeVideo');
         vid.addEventListener('timeupdate', () => this.renderCaptionAtTime(vid.currentTime));
+
+        this.initAuthListener();
+      }
+
+      // Listen for User Sign-In / Sign-Out state
+      initAuthListener() {
+        if (!auth) return;
+        onAuthStateChanged(auth, (user) => {
+          const navArea = document.getElementById('userNavArea');
+          if (user && !user.isAnonymous) {
+            this.currentUser = user;
+            const displayName = user.displayName || user.email.split('@')[0];
+            const avatar = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=ec4899&color=fff`;
+            navArea.innerHTML = `
+              <div class="flex items-center gap-2 bg-white/5 border border-white/10 pl-1.5 pr-3 py-1 rounded-full">
+                <img src="${avatar}" class="w-6 h-6 rounded-full object-cover" />
+                <span class="text-xs font-bold text-slate-200 max-w-[90px] truncate">${displayName}</span>
+                <button onclick="app.logoutUser()" title="Sign Out" class="text-[10px] text-rose-400 hover:text-rose-300 font-bold ml-1">Exit</button>
+              </div>
+            `;
+          } else {
+            this.currentUser = null;
+            if (!user) signInAnonymously(auth).catch(() => {});
+            navArea.innerHTML = `
+              <button onclick="app.openUserModal()" class="neon-gradient text-white font-bold px-4 py-2 rounded-full text-xs shadow-lg shadow-pink-500/25 transition flex items-center gap-1.5">
+                <span>👤</span> <span>Sign In</span>
+              </button>
+            `;
+          }
+        });
+      }
+
+      openUserModal() {
+        document.getElementById('modalUserAuth').classList.remove('hidden');
+      }
+
+      closeUserModal() {
+        document.getElementById('modalUserAuth').classList.add('hidden');
+      }
+
+      async loginWithGoogle() {
+        if (!auth) return alert("Authentication service not ready.");
+        try {
+          const provider = new GoogleAuthProvider();
+          await signInWithPopup(auth, provider);
+          this.closeUserModal();
+        } catch (err) {
+          alert("Google Sign-In failed: " + err.message);
+        }
+      }
+
+      async loginWithEmail() {
+        if (!auth) return;
+        const email = document.getElementById('userEmailInput').value.trim();
+        const pass = document.getElementById('userPassInput').value;
+        if (!email || !pass) return alert("Please enter both email and password.");
+        try {
+          await signInWithEmailAndPassword(auth, email, pass);
+          this.closeUserModal();
+        } catch (err) {
+          alert("Sign-In Error: " + err.message);
+        }
+      }
+
+      async registerWithEmail() {
+        if (!auth) return;
+        const email = document.getElementById('userEmailInput').value.trim();
+        const pass = document.getElementById('userPassInput').value;
+        if (!email || pass.length < 6) return alert("Enter a valid email and a password with at least 6 characters.");
+        try {
+          await createUserWithEmailAndPassword(auth, email, pass);
+          this.closeUserModal();
+          alert("Account created! Welcome to MY J ANIME.");
+        } catch (err) {
+          alert("Registration Error: " + err.message);
+        }
+      }
+
+      async logoutUser() {
+        if (!auth) return;
+        await signOut(auth);
       }
 
       parseSubtitles(rawText) {
@@ -388,8 +590,8 @@
         const btn = document.getElementById('ccToggleBtn');
         btn.textContent = this.ccEnabled ? 'CC: ON' : 'CC: OFF';
         btn.className = this.ccEnabled 
-          ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold px-3 py-1.5 rounded-lg transition'
-          : 'bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold px-3 py-1.5 rounded-lg transition';
+          ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold px-3.5 py-1.5 rounded-full transition'
+          : 'bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold px-3.5 py-1.5 rounded-full transition';
         if (!this.ccEnabled) document.getElementById('captionText').classList.add('hidden');
       }
 
@@ -411,11 +613,11 @@
           clearInterval(this.iframeInterval);
           this.iframeRunning = false;
           btn.textContent = '▶ Resume Sub Sync';
-          btn.className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg transition';
+          btn.className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-full transition';
         } else {
           this.iframeRunning = true;
           btn.textContent = '⏸ Pause Sync';
-          btn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1.5 rounded-lg transition';
+          btn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-bold px-3.5 py-1.5 rounded-full transition';
           this.iframeInterval = setInterval(() => {
             this.iframeTime += 0.2;
             const mins = String(Math.floor(this.iframeTime / 60)).padStart(2, '0');
@@ -432,7 +634,7 @@
         this.iframeTime = 0;
         document.getElementById('timerDisplay').textContent = '00:00';
         document.getElementById('subTimerBtn').textContent = '▶ Start Sub Sync';
-        document.getElementById('subTimerBtn').className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg transition';
+        document.getElementById('subTimerBtn').className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-full transition';
         document.getElementById('captionText').classList.add('hidden');
       }
 
@@ -473,20 +675,32 @@
 
       async initCatalog() {
         await this.loadSubbedDB();
-        const q = `query { Page(page: 1, perPage: 24) { media(type: ANIME, sort: [TRENDING_DESC], isAdult: false) { id title { romaji english } coverImage { large } episodes seasonYear format averageScore description } } }`;
+        const q = `query { Page(page: 1, perPage: 24) { media(type: ANIME, sort: [TRENDING_DESC], isAdult: false) { id title { romaji english } bannerImage coverImage { extraLarge large } episodes seasonYear format averageScore description } } }`;
         const data = await this.queryAniList(q);
-        if (data?.Page?.media) {
-          this.renderCards(data.Page.media, document.getElementById('gridCatalog'));
+        if (data?.Page?.media?.length) {
+          const list = data.Page.media;
+          this.setupHero(list[0]);
+          this.renderCards(list, document.getElementById('gridCatalog'));
         } else {
           document.getElementById('gridCatalog').innerHTML = `<p class="text-sm text-rose-400 col-span-full py-4 text-center">Failed to fetch catalog from server.</p>`;
         }
+      }
+
+      setupHero(anime) {
+        if (!anime) return;
+        const title = anime.title.english || anime.title.romaji;
+        document.getElementById('heroTitle').textContent = title;
+        document.getElementById('heroDesc').textContent = (anime.description || '').replace(/<[^>]*>?/gm, '');
+        document.getElementById('heroBg').style.backgroundImage = `url('${anime.bannerImage || anime.coverImage.extraLarge || anime.coverImage.large}')`;
+        const encoded = encodeURIComponent(JSON.stringify(anime));
+        document.getElementById('heroActionBtn').onclick = () => this.selectAnime(encoded);
       }
 
       async searchAnime() {
         const term = document.getElementById('searchInput').value.trim();
         if (!term) return this.initCatalog();
         this.goHome();
-        document.getElementById('catalogTitle').textContent = `Search Results: "${term}"`;
+        document.getElementById('catalogTitle').textContent = `🔍 Search Results: "${term}"`;
         const container = document.getElementById('gridCatalog');
         container.innerHTML = `<p class="text-sm text-slate-400 col-span-full py-4 text-center">Searching...</p>`;
 
@@ -509,15 +723,19 @@
           const hasSub = Object.keys(this.subMap).some(k => k.startsWith(item.id + '_'));
           const encoded = encodeURIComponent(JSON.stringify(item));
           return `
-            <div onclick="app.selectAnime('${encoded}')" class="group cursor-pointer custom-glass rounded-xl overflow-hidden hover:border-indigo-500/50 transition flex flex-col shadow-md">
+            <div onclick="app.selectAnime('${encoded}')" class="group cursor-pointer anime-card rounded-2xl overflow-hidden flex flex-col">
               <div class="relative aspect-[3/4] bg-slate-900 overflow-hidden">
-                <img src="${item.coverImage.large}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                ${hasSub ? `<span class="absolute top-2 left-2 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">Sinhala Sub</span>` : ''}
-                <span class="absolute bottom-2 right-2 bg-black/80 text-slate-200 text-[10px] font-semibold px-2 py-0.5 rounded">${item.episodes ? item.episodes + ' Eps' : 'Ongoing'}</span>
+                <img src="${item.coverImage.large}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                <div class="absolute inset-0 bg-gradient-to-t from-[#06070d] via-transparent to-transparent opacity-60"></div>
+                ${hasSub ? `<span class="absolute top-2.5 left-2.5 neon-gradient text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-md">සිංහල Sub</span>` : ''}
+                <span class="absolute bottom-2 right-2 bg-black/80 backdrop-blur-md text-slate-200 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-white/10">${item.episodes ? item.episodes + ' Eps' : 'Ongoing'}</span>
               </div>
               <div class="p-3 flex-1 flex flex-col justify-between">
-                <h3 class="text-xs font-bold text-slate-100 line-clamp-2 group-hover:text-indigo-400 transition">${title}</h3>
-                <p class="text-[11px] text-slate-500 mt-1">${item.seasonYear || 'Series'}</p>
+                <h3 class="text-xs font-bold text-slate-100 line-clamp-2 group-hover:text-pink-400 transition">${title}</h3>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 mt-1.5">
+                  <span>${item.seasonYear || 'Anime'}</span>
+                  <span class="text-amber-400 font-semibold">★ ${item.averageScore ? (item.averageScore/10).toFixed(1) : '8.5'}</span>
+                </div>
               </div>
             </div>
           `;
@@ -545,7 +763,7 @@
                 episodes: 12,
                 seasonYear: '2026',
                 format: 'TV',
-                averageScore: 85,
+                averageScore: 88,
                 description: 'Sinhala Subtitled Anime.'
               };
             }
@@ -597,8 +815,8 @@
           watchBtn.classList.add('hidden');
           reqBtn.classList.remove('hidden');
           reqBtn.disabled = false;
-          reqBtn.textContent = "🔴 Request Subtitle";
-          reqBtn.className = "bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 transition shadow-lg shadow-rose-600/20";
+          reqBtn.textContent = "🔴 Request Sinhala Subtitle";
+          reqBtn.className = "bg-rose-600 hover:bg-rose-500 text-white font-bold px-6 py-3 rounded-full text-sm flex items-center gap-2 transition shadow-lg shadow-rose-600/25";
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -618,7 +836,7 @@
         const listContainer = document.getElementById('episodeButtonsList');
         if (publishedEps.length > 0) {
           listContainer.innerHTML = publishedEps.map(ep => 
-            `<button onclick="app.playEp(${ep.epNum})" class="py-2 rounded-xl text-xs font-bold bg-[#111726] hover:bg-indigo-600 border border-white/5 transition shadow">${ep.epNum}</button>`
+            `<button onclick="app.playEp(${ep.epNum})" class="py-2 rounded-xl text-xs font-bold bg-[#0b0e18] hover:bg-pink-600 border border-white/10 transition shadow">${ep.epNum}</button>`
           ).join('');
           this.playEp(publishedEps[0].epNum);
         } else {
@@ -680,15 +898,17 @@
       async requestSub() {
         if (!this.selectedAnime || !database) return;
         const name = this.selectedAnime.title.english || this.selectedAnime.title.romaji;
+        const requesterName = this.currentUser ? (this.currentUser.displayName || this.currentUser.email) : "Guest Viewer";
         const btn = document.getElementById('reqBtn');
         btn.disabled = true;
         btn.textContent = "Requested ✓";
-        btn.className = "bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-bold px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 cursor-not-allowed";
+        btn.className = "bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-bold px-6 py-3 rounded-full text-sm flex items-center gap-2 cursor-not-allowed";
         
         await addDoc(collection(database, "sub_requests"), { 
           name, 
           anilistId: this.selectedAnime.id, 
           posterUrl: this.selectedAnime.coverImage.large,
+          requestedBy: requesterName,
           time: Date.now() 
         });
         alert(`Successfully requested Sinhala subtitles for "${name}"!`);
@@ -740,13 +960,13 @@
           }
 
           listEl.innerHTML = reqs.map(r => `
-            <div class="bg-[#111726] border border-white/5 p-3 rounded-xl flex items-center justify-between gap-2">
+            <div class="bg-[#0b0e18] border border-white/10 p-3 rounded-2xl flex items-center justify-between gap-2">
               <div>
                 <h4 class="text-xs font-bold text-white">${r.name}</h4>
-                <p class="text-[10px] text-slate-400">AniList ID: ${r.anilistId}</p>
+                <p class="text-[10px] text-slate-400">By: ${r.requestedBy || 'Viewer'} • ID: ${r.anilistId}</p>
               </div>
               <div class="flex items-center gap-1.5">
-                <button onclick="app.studioPick(${r.anilistId}, '${r.name.replace(/'/g, "\\'")}', '${r.posterUrl || ''}')" class="bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition">Select</button>
+                <button onclick="app.studioPick(${r.anilistId}, '${r.name.replace(/'/g, "\\'")}', '${r.posterUrl || ''}')" class="bg-pink-600/20 text-pink-300 hover:bg-pink-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition">Select</button>
                 <button onclick="app.deleteRequest('${r.docId}')" class="bg-rose-600/20 text-rose-300 hover:bg-rose-600 hover:text-white px-2 py-1 rounded-lg text-[10px] font-bold transition">✕</button>
               </div>
             </div>
@@ -769,7 +989,7 @@
         if (data?.Page?.media) {
           document.getElementById('studioResults').innerHTML = data.Page.media.map(m => {
             const t = m.title.english || m.title.romaji;
-            return `<div onclick="app.studioPick(${m.id}, '${t.replace(/'/g, "\\'")}', '${m.coverImage.large}')" class="cursor-pointer bg-[#111726] border border-white/5 p-2.5 rounded-xl text-xs hover:bg-indigo-600/30 transition">${t}</div>`;
+            return `<div onclick="app.studioPick(${m.id}, '${t.replace(/'/g, "\\'")}', '${m.coverImage.large}')" class="cursor-pointer bg-[#0b0e18] border border-white/10 p-2.5 rounded-xl text-xs hover:bg-pink-600/30 transition">${t}</div>`;
           }).join('');
         }
       }
