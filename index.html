@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANISHIFT — Watch Anime with Sinhala Subtitles</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif;
+      background-color: #07090e;
+      color: #f1f5f9;
+    }
+    .custom-glass {
+      background: rgba(15, 20, 30, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .sinhala-caption {
+      font-family: 'Noto Sans Sinhala', sans-serif;
+      text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.95), 0px 0px 10px rgba(0, 0, 0, 0.9);
+      background: rgba(0, 0, 0, 0.65);
+      padding: 4px 14px;
+      border-radius: 8px;
+      display: inline-block;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #07090e; }
+    ::-webkit-scrollbar-thumb { background: #1a2236; border-radius: 999px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+  <!-- Navigation Bar -->
+  <header class="sticky top-0 z-50 custom-glass border-b border-white/10 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <div onclick="app.goHome()" class="flex items-center gap-2 cursor-pointer group">
+        <span class="text-xl font-black tracking-wider text-white">≡ <span class="text-indigo-500 group-hover:text-indigo-400 transition">ANISHIFT</span></span>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="flex-1 max-w-xl relative">
+        <input id="searchInput" type="text" placeholder="Search anime series (e.g. Naruto, Bleach)..." 
+          onkeydown="if(event.key==='Enter') app.searchAnime()"
+          class="w-full bg-[#111726] border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition shadow-inner" />
+      </div>
+
+      <!-- Owner Studio Access -->
+      <div>
+        <button onclick="app.openLogin()" class="bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
+          ⚙ Owner Studio
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Area -->
+  <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6 space-y-8">
+
+    <!-- HOME PAGE -->
+    <div id="viewHome" class="space-y-8">
+      <section class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-extrabold text-white tracking-wide flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Sinhala Subtitled Anime
+          </h2>
+          <span class="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full font-medium">Soft-Sub CC Ready</span>
+        </div>
+        <div id="gridSinhala" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <p class="text-sm text-slate-400 col-span-full py-4 text-center">Loading community subbed library...</p>
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 id="catalogTitle" class="text-lg font-extrabold text-white tracking-wide">Trending Catalog</h2>
+        </div>
+        <div id="gridCatalog" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <p class="text-sm text-slate-400 col-span-full py-4 text-center">Connecting to AniList Network...</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- DETAILS PAGE -->
+    <div id="viewDetails" class="hidden space-y-8">
+      <div class="text-xs text-slate-400 flex items-center gap-2">
+        <span onclick="app.goHome()" class="cursor-pointer hover:text-white transition">Home</span> › <span id="detCrumb" class="text-slate-200 font-medium">Anime Details</span>
+      </div>
+
+      <div class="custom-glass rounded-2xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-4 gap-8 relative overflow-hidden shadow-2xl">
+        <div class="absolute inset-0 bg-cover bg-center opacity-10 filter blur-3xl pointer-events-none" id="detBg"></div>
+        
+        <div class="aspect-[3/4] rounded-xl overflow-hidden bg-slate-900 border border-white/10 shadow-2xl relative z-10">
+          <img id="detPoster" src="" class="w-full h-full object-cover" />
+        </div>
+
+        <div class="md:col-span-3 space-y-4 relative z-10 flex flex-col justify-center">
+          <div>
+            <h1 id="detTitle" class="text-2xl sm:text-4xl font-black text-white">Title</h1>
+            <p id="detSubTitle" class="text-xs text-slate-400 mt-1">Alternative: —</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3 text-xs text-slate-300">
+            <span id="detType" class="bg-white/10 px-2.5 py-1 rounded-md font-semibold">TV</span>
+            <span id="detYear" class="bg-white/10 px-2.5 py-1 rounded-md">2026</span>
+            <span id="detEps" class="bg-white/10 px-2.5 py-1 rounded-md">12 Eps</span>
+            <span id="detScore" class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-md font-bold">★ 8.5</span>
+          </div>
+
+          <p id="detDesc" class="text-sm text-slate-300 leading-relaxed max-w-4xl"></p>
+
+          <!-- Dynamic Action Buttons -->
+          <div class="flex flex-wrap items-center gap-3 pt-2">
+            <button id="watchNowBtn" onclick="app.startWatchSession()" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition">
+              ▶ Watch Now (Sinhala Sub)
+            </button>
+            <button id="reqBtn" onclick="app.requestSub()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 transition shadow-lg shadow-rose-600/20">
+              🔴 Request Subtitle
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WATCH PLAYER PAGE -->
+    <div id="viewWatch" class="hidden space-y-6">
+      <div class="text-xs text-slate-400 flex items-center gap-2">
+        <span onclick="app.goHome()" class="cursor-pointer hover:text-white transition">Home</span> › <span onclick="app.openDetails()" class="cursor-pointer hover:text-white transition" id="watchCrumbAnime">Anime</span> › <span id="watchCrumbEp" class="text-slate-200 font-medium">Episode 1</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-4">
+          <!-- Video Container with Soft-Sub Overlay -->
+          <div id="playerContainer" class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl group">
+            <video id="nativeVideo" class="w-full h-full object-contain bg-black hidden" controls playsinline></video>
+            <iframe id="mainPlayer" class="w-full h-full border-0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+            
+            <!-- Sinhala Subtitle Overlay -->
+            <div id="captionOverlay" class="pointer-events-none absolute bottom-12 left-0 right-0 px-4 text-center z-30 transition-opacity">
+              <span id="captionText" class="sinhala-caption text-base sm:text-xl font-bold text-white hidden"></span>
+            </div>
+          </div>
+
+          <!-- Iframe Subtitle Timer Bar (For Embed players like Streamwish/Abyss) -->
+          <div id="iframeSyncBar" class="hidden custom-glass rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs border border-indigo-500/30">
+            <div class="flex items-center gap-2">
+              <button id="subTimerBtn" onclick="app.toggleIframeTimer()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg transition">
+                ▶ Start Sub Sync
+              </button>
+              <button onclick="app.resetIframeTimer()" class="bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-lg">↺ Reset (00:00)</button>
+              <span id="timerDisplay" class="font-mono text-indigo-300 font-bold px-2">00:00</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400">Sync:</span>
+              <button onclick="app.adjustOffset(-0.5)" class="bg-white/10 hover:bg-white/20 px-2 py-1 rounded">-0.5s</button>
+              <span id="offsetDisplay" class="font-mono text-amber-300 px-1">0.0s</span>
+              <button onclick="app.adjustOffset(0.5)" class="bg-white/10 hover:bg-white/20 px-2 py-1 rounded">+0.5s</button>
+            </div>
+          </div>
+
+          <!-- Caption Controls Bar -->
+          <div class="custom-glass rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2 font-bold text-indigo-400 text-sm" id="watchEpHeading">Episode 1</div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button id="ccToggleBtn" onclick="app.toggleCC()" class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold px-3 py-1.5 rounded-lg transition">
+                CC: ON
+              </button>
+              <button onclick="app.changeFontSize()" class="bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1.5 rounded-lg">
+                Aa Size
+              </button>
+              <label class="cursor-pointer bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-300 font-semibold px-3 py-1.5 rounded-lg transition">
+                📂 Load Local .SRT/.ASS
+                <input type="file" accept=".srt,.ass" onchange="app.loadLocalFile(event)" class="hidden" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="custom-glass rounded-xl p-4 space-y-3 shadow-lg">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2">
+              <span class="text-xs font-bold text-slate-300">Published Episodes</span>
+              <span id="watchEpCount" class="text-xs text-emerald-400 font-semibold">Available</span>
+            </div>
+            <div id="episodeButtonsList" class="grid grid-cols-5 gap-2 max-h-[420px] overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OWNER STUDIO MANAGEMENT -->
+    <div id="viewStudio" class="hidden space-y-8">
+      <div class="flex justify-between items-center border-b border-white/10 pb-4">
+        <div>
+          <h2 class="text-xl font-extrabold text-white">Owner Studio Dashboard</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Publish episodes with Sinhala subtitles & manage requests</p>
+        </div>
+        <button onclick="app.goHome()" class="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl text-xs font-semibold transition">← Exit Studio</button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Publish Form -->
+        <div class="custom-glass rounded-2xl p-6 space-y-4 shadow-xl h-fit">
+          <h3 class="text-sm font-bold text-indigo-400 uppercase tracking-wider">1. Publish Episode + Sinhala Subtitle</h3>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Search Series on AniList</label>
+            <div class="flex gap-2">
+              <input id="studioQuery" type="text" placeholder="Type name..." class="w-full bg-[#07090e] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" />
+              <button onclick="app.studioSearch()" class="bg-indigo-600 hover:bg-indigo-500 font-bold px-5 py-2.5 rounded-xl text-xs transition">Search</button>
+            </div>
+            <div id="studioResults" class="mt-2 space-y-1.5 max-h-40 overflow-y-auto pr-1"></div>
+          </div>
+
+          <input type="hidden" id="pubId" />
+          <input type="hidden" id="pubPoster" />
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Target Anime</label>
+            <input id="pubTitle" type="text" readonly class="w-full bg-[#07090e]/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-300 cursor-not-allowed" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1">Episode No.</label>
+              <input id="pubEp" type="number" value="1" class="w-full bg-[#07090e] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1">Stream / Embed URL</label>
+              <input id="pubUrl" type="text" placeholder="https://... (.mp4, .m3u8, or iframe)" class="w-full bg-[#07090e] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" />
+            </div>
+          </div>
+
+          <!-- Sinhala Subtitle Upload Input -->
+          <div>
+            <label class="block text-xs font-semibold text-emerald-400 mb-1">Upload Sinhala Subtitle File (.SRT or .ASS)</label>
+            <input id="pubSubFile" type="file" accept=".srt,.ass" class="w-full bg-[#07090e] border border-emerald-500/30 rounded-xl px-3 py-2 text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500" />
+          </div>
+
+          <button id="publishBtn" onclick="app.publishEp()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-600/20">
+            + Publish Episode with Subtitles
+          </button>
+        </div>
+
+        <!-- Viewer Requests Inbox -->
+        <div class="custom-glass rounded-2xl p-6 space-y-4 shadow-xl h-fit">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-rose-400 uppercase tracking-wider">2. Viewer Subtitle Requests</h3>
+            <button onclick="app.loadRequests()" class="text-xs text-slate-400 hover:text-white">↻ Refresh</button>
+          </div>
+          <div id="requestsList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+            <p class="text-xs text-slate-400">Loading requests...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/10 bg-[#040508] py-6 mt-12 text-center text-xs text-slate-500">
+    <p>© 2026 ANISHIFT. All Rights Reserved. Powered by Firebase & AniList API.</p>
+  </footer>
+
+  <!-- Login Modal -->
+  <div id="modalLogin" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="custom-glass rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-2xl border border-white/10">
+      <h3 class="text-lg font-bold text-white">Owner Passcode Verification</h3>
+      <input id="passInput" type="password" placeholder="Passcode (1234)" class="w-full bg-[#07090e] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" />
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="document.getElementById('modalLogin').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs font-medium bg-white/5 hover:bg-white/10 transition">Cancel</button>
+        <button onclick="app.verifyPass()" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 transition shadow-lg shadow-indigo-600/30">Verify</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Core Engine -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const fbCfg = {
+      apiKey: "AIzaSyAdU096oksFRbZIsoe99MjQoVZz4Ydzo-s",
+      authDomain: "my-j-anime-996cb.firebaseapp.com",
+      projectId: "my-j-anime-996cb",
+      storageBucket: "my-j-anime-996cb.firebasestorage.app",
+      messagingSenderId: "747829682593",
+      appId: "1:747829682593:web:687e1835e28ec80c7eabe0"
+    };
+
+    let database = null;
+    try {
+      const appInst = initializeApp(fbCfg);
+      signInAnonymously(getAuth(appInst)).catch(() => {});
+      database = getFirestore(appInst);
+    } catch (e) {
+      console.warn("DB Warning:", e);
+    }
+
+    class AnishiftCore {
+      constructor() {
+        this.selectedAnime = null;
+        this.subMap = {};
+        this.activeSubs = [];
+        this.ccEnabled = true;
+        this.subOffset = 0;
+        this.fontSizeIdx = 1;
+        this.hls = null;
+        
+        // Manual timer for iframe embeds
+        this.iframeTime = 0;
+        this.iframeRunning = false;
+        this.iframeInterval = null;
+
+        // Attach native video timeupdate listener
+        const vid = document.getElementById('nativeVideo');
+        vid.addEventListener('timeupdate', () => this.renderCaptionAtTime(vid.currentTime));
+      }
+
+      // Parse SRT and ASS subtitle formats
+      parseSubtitles(rawText) {
+        if (!rawText) return [];
+        const cues = [];
+        const lines = rawText.replace(/\r\n/g, '\n').split('\n');
+
+        // Check if ASS format
+        if (rawText.includes('[Events]') || rawText.includes('Dialogue:')) {
+          for (const line of lines) {
+            if (line.startsWith('Dialogue:')) {
+              const parts = line.split(',');
+              if (parts.length >= 10) {
+                const start = this.timeToSec(parts[1].trim());
+                const end = this.timeToSec(parts[2].trim());
+                const text = parts.slice(9).join(',')
+                  .replace(/\{[^}]*\}/g, '') // remove ASS override tags like {\pos...}
+                  .replace(/\\N/g, '<br>')
+                  .replace(/\\n/g, '<br>')
+                  .trim();
+                if (text) cues.push({ start, end, text });
+              }
+            }
+          }
+        } else {
+          // Parse SRT format
+          const blocks = rawText.trim().split(/\n\s*\n/);
+          for (const block of blocks) {
+            const bLines = block.split('\n');
+            const timeLineIdx = bLines.findIndex(l => l.includes('-->'));
+            if (timeLineIdx !== -1) {
+              const [sStr, eStr] = bLines[timeLineIdx].split('-->').map(s => s.trim());
+              const start = this.timeToSec(sStr.replace(',', '.'));
+              const end = this.timeToSec(eStr.replace(',', '.'));
+              const text = bLines.slice(timeLineIdx + 1).join('<br>').replace(/<[^>]*>/g, (tag) => tag === '<br>' ? '<br>' : '').trim();
+              if (text) cues.push({ start, end, text });
+            }
+          }
+        }
+        return cues;
+      }
+
+      timeToSec(tStr) {
+        const parts = tStr.split(':');
+        if (parts.length === 3) {
+          return parseFloat(parts[0]) * 3600 + parseFloat(parts[1]) * 60 + parseFloat(parts[2]);
+        }
+        return 0;
+      }
+
+      renderCaptionAtTime(currentSec) {
+        const capEl = document.getElementById('captionText');
+        if (!this.ccEnabled || !this.activeSubs.length) {
+          capEl.classList.add('hidden');
+          return;
+        }
+        const adjTime = currentSec + this.subOffset;
+        const cue = this.activeSubs.find(c => adjTime >= c.start && adjTime <= c.end);
+        if (cue) {
+          capEl.innerHTML = cue.text;
+          capEl.classList.remove('hidden');
+        } else {
+          capEl.classList.add('hidden');
+        }
+      }
+
+      toggleCC() {
+        this.ccEnabled = !this.ccEnabled;
+        const btn = document.getElementById('ccToggleBtn');
+        btn.textContent = this.ccEnabled ? 'CC: ON' : 'CC: OFF';
+        btn.className = this.ccEnabled 
+          ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold px-3 py-1.5 rounded-lg transition'
+          : 'bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold px-3 py-1.5 rounded-lg transition';
+        if (!this.ccEnabled) document.getElementById('captionText').classList.add('hidden');
+      }
+
+      changeFontSize() {
+        const sizes = ['text-sm sm:text-base', 'text-base sm:text-xl', 'text-lg sm:text-2xl', 'text-xl sm:text-3xl'];
+        this.fontSizeIdx = (this.fontSizeIdx + 1) % sizes.length;
+        const capEl = document.getElementById('captionText');
+        capEl.className = `sinhala-caption font-bold text-white ${sizes[this.fontSizeIdx]} ${capEl.classList.contains('hidden') ? 'hidden' : ''}`;
+      }
+
+      adjustOffset(delta) {
+        this.subOffset += delta;
+        document.getElementById('offsetDisplay').textContent = `${this.subOffset > 0 ? '+' : ''}${this.subOffset.toFixed(1)}s`;
+      }
+
+      toggleIframeTimer() {
+        const btn = document.getElementById('subTimerBtn');
+        if (this.iframeRunning) {
+          clearInterval(this.iframeInterval);
+          this.iframeRunning = false;
+          btn.textContent = '▶ Resume Sub Sync';
+          btn.className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg transition';
+        } else {
+          this.iframeRunning = true;
+          btn.textContent = '⏸ Pause Sync';
+          btn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1.5 rounded-lg transition';
+          this.iframeInterval = setInterval(() => {
+            this.iframeTime += 0.2;
+            const mins = String(Math.floor(this.iframeTime / 60)).padStart(2, '0');
+            const secs = String(Math.floor(this.iframeTime % 60)).padStart(2, '0');
+            document.getElementById('timerDisplay').textContent = `${mins}:${secs}`;
+            this.renderCaptionAtTime(this.iframeTime);
+          }, 200);
+        }
+      }
+
+      resetIframeTimer() {
+        clearInterval(this.iframeInterval);
+        this.iframeRunning = false;
+        this.iframeTime = 0;
+        document.getElementById('timerDisplay').textContent = '00:00';
+        document.getElementById('subTimerBtn').textContent = '▶ Start Sub Sync';
+        document.getElementById('subTimerBtn').className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg transition';
+        document.getElementById('captionText').classList.add('hidden');
+      }
+
+      loadLocalFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.activeSubs = this.parseSubtitles(e.target.result);
+          alert(`Loaded ${this.activeSubs.length} Sinhala subtitle lines!`);
+        };
+        reader.readAsText(file);
+      }
+
+      async queryAniList(query, variables = {}) {
+        try {
+          const res = await fetch('https://graphql.anilist.co', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ query, variables })
+          });
+          const json = await res.json();
+          if (json?.data) return json.data;
+        } catch (e) {}
+
+        try {
+          const res = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://graphql.anilist.co'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ query, variables })
+          });
+          const json = await res.json();
+          return json.data;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      async initCatalog() {
+        await this.loadSubbedDB();
+        const q = `query { Page(page: 1, perPage: 24) { media(type: ANIME, sort: [TRENDING_DESC], isAdult: false) { id title { romaji english } coverImage { large } episodes seasonYear format averageScore description } } }`;
+        const data = await this.queryAniList(q);
+        if (data?.Page?.media) {
+          this.renderCards(data.Page.media, document.getElementById('gridCatalog'));
+        } else {
+          document.getElementById('gridCatalog').innerHTML = `<p class="text-sm text-rose-400 col-span-full py-4 text-center">Failed to fetch catalog from server.</p>`;
+        }
+      }
+
+      async searchAnime() {
+        const term = document.getElementById('searchInput').value.trim();
+        if (!term) return this.initCatalog();
+        this.goHome();
+        document.getElementById('catalogTitle').textContent = `Search Results: "${term}"`;
+        const container = document.getElementById('gridCatalog');
+        container.innerHTML = `<p class="text-sm text-slate-400 col-span-full py-4 text-center">Searching...</p>`;
+
+        const q = `query ($s: String) { Page(page: 1, perPage: 24) { media(type: ANIME, search: $s, isAdult: false) { id title { romaji english } coverImage { large } episodes seasonYear format averageScore description } } }`;
+        const data = await this.queryAniList(q, { s: term });
+        if (data?.Page?.media) {
+          this.renderCards(data.Page.media, container);
+        } else {
+          container.innerHTML = `<p class="text-sm text-slate-400 col-span-full py-4 text-center">No matching anime found.</p>`;
+        }
+      }
+
+      renderCards(list, element) {
+        if (!list.length) {
+          element.innerHTML = `<p class="text-sm text-slate-400 col-span-full py-4 text-center">No items found.</p>`;
+          return;
+        }
+        element.innerHTML = list.map(item => {
+          const title = item.title.english || item.title.romaji;
+          const hasSub = Object.keys(this.subMap).some(k => k.startsWith(item.id + '_'));
+          const encoded = encodeURIComponent(JSON.stringify(item));
+          return `
+            <div onclick="app.selectAnime('${encoded}')" class="group cursor-pointer custom-glass rounded-xl overflow-hidden hover:border-indigo-500/50 transition flex flex-col shadow-md">
+              <div class="relative aspect-[3/4] bg-slate-900 overflow-hidden">
+                <img src="${item.coverImage.large}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                ${hasSub ? `<span class="absolute top-2 left-2 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">Sinhala Sub</span>` : ''}
+                <span class="absolute bottom-2 right-2 bg-black/80 text-slate-200 text-[10px] font-semibold px-2 py-0.5 rounded">${item.episodes ? item.episodes + ' Eps' : 'Ongoing'}</span>
+              </div>
+              <div class="p-3 flex-1 flex flex-col justify-between">
+                <h3 class="text-xs font-bold text-slate-100 line-clamp-2 group-hover:text-indigo-400 transition">${title}</h3>
+                <p class="text-[11px] text-slate-500 mt-1">${item.seasonYear || 'Series'}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      async loadSubbedDB() {
+        const grid = document.getElementById('gridSinhala');
+        if (!database) {
+          grid.innerHTML = `<p class="text-xs text-slate-400 col-span-full py-2">Database not initialized.</p>`;
+          return;
+        }
+        try {
+          const snap = await getDocs(collection(database, "sinhala_episodes"));
+          this.subMap = {};
+          const catalogMap = {};
+          snap.forEach(dSnap => {
+            const row = dSnap.data();
+            this.subMap[`${row.anilistId}_${row.epNum}`] = row;
+            if (!catalogMap[row.anilistId]) {
+              catalogMap[row.anilistId] = {
+                id: row.anilistId,
+                title: { english: row.animeTitle, romaji: row.animeTitle },
+                coverImage: { large: row.posterUrl || '' },
+                episodes: 12,
+                seasonYear: '2026',
+                format: 'TV',
+                averageScore: 85,
+                description: 'Sinhala Subtitled Anime.'
+              };
+            }
+          });
+          const items = Object.values(catalogMap);
+          if (items.length) {
+            this.renderCards(items, grid);
+          } else {
+            grid.innerHTML = `<p class="text-xs text-slate-400 col-span-full py-2">No subbed series available currently.</p>`;
+          }
+        } catch (e) {
+          grid.innerHTML = `<p class="text-xs text-slate-400 col-span-full py-2">No active subbed titles found.</p>`;
+        }
+      }
+
+      selectAnime(encodedJson) {
+        this.selectedAnime = JSON.parse(decodeURIComponent(encodedJson));
+        this.openDetails();
+      }
+
+      openDetails() {
+        if (!this.selectedAnime) return;
+        this.resetIframeTimer();
+        document.getElementById('viewHome').classList.add('hidden');
+        document.getElementById('viewWatch').classList.add('hidden');
+        document.getElementById('viewStudio').classList.add('hidden');
+        document.getElementById('viewDetails').classList.remove('hidden');
+
+        const name = this.selectedAnime.title.english || this.selectedAnime.title.romaji;
+        document.getElementById('detCrumb').textContent = name;
+        document.getElementById('detTitle').textContent = name;
+        document.getElementById('detSubTitle').textContent = `Alternative: ${this.selectedAnime.title.romaji || name}`;
+        document.getElementById('detPoster').src = this.selectedAnime.coverImage.large;
+        document.getElementById('detBg').style.backgroundImage = `url('${this.selectedAnime.coverImage.large}')`;
+        document.getElementById('detType').textContent = this.selectedAnime.format || 'TV';
+        document.getElementById('detYear').textContent = this.selectedAnime.seasonYear || '2026';
+        document.getElementById('detEps').textContent = this.selectedAnime.episodes ? `${this.selectedAnime.episodes} Eps` : 'Ongoing';
+        document.getElementById('detScore').textContent = `★ ${this.selectedAnime.averageScore ? (this.selectedAnime.averageScore/10).toFixed(1) : '8.5'}`;
+        document.getElementById('detDesc').textContent = (this.selectedAnime.description || 'No description provided.').replace(/<[^>]*>?/gm, '');
+
+        const hasPublishedEpisodes = Object.keys(this.subMap).some(k => k.startsWith(this.selectedAnime.id + '_'));
+        const watchBtn = document.getElementById('watchNowBtn');
+        const reqBtn = document.getElementById('reqBtn');
+
+        if (hasPublishedEpisodes) {
+          watchBtn.classList.remove('hidden');
+          reqBtn.classList.add('hidden');
+        } else {
+          watchBtn.classList.add('hidden');
+          reqBtn.classList.remove('hidden');
+          reqBtn.disabled = false;
+          reqBtn.textContent = "🔴 Request Subtitle";
+          reqBtn.className = "bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 transition shadow-lg shadow-rose-600/20";
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      startWatchSession() {
+        document.getElementById('viewDetails').classList.add('hidden');
+        document.getElementById('viewWatch').classList.remove('hidden');
+        const name = this.selectedAnime.title.english || this.selectedAnime.title.romaji;
+        document.getElementById('watchCrumbAnime').textContent = name;
+
+        const publishedEps = Object.values(this.subMap)
+          .filter(ep => ep.anilistId === this.selectedAnime.id)
+          .sort((a, b) => a.epNum - b.epNum);
+
+        document.getElementById('watchEpCount').textContent = `${publishedEps.length} Published`;
+
+        const listContainer = document.getElementById('episodeButtonsList');
+        if (publishedEps.length > 0) {
+          listContainer.innerHTML = publishedEps.map(ep => 
+            `<button onclick="app.playEp(${ep.epNum})" class="py-2 rounded-xl text-xs font-bold bg-[#111726] hover:bg-indigo-600 border border-white/5 transition shadow">${ep.epNum}</button>`
+          ).join('');
+          this.playEp(publishedEps[0].epNum);
+        } else {
+          listContainer.innerHTML = `<p class="text-xs text-slate-400 col-span-full">No episodes uploaded yet.</p>`;
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      playEp(epNum) {
+        this.resetIframeTimer();
+        document.getElementById('watchCrumbEp').textContent = `Episode ${epNum}`;
+        const name = this.selectedAnime.title.english || this.selectedAnime.title.romaji;
+        document.getElementById('watchEpHeading').textContent = `${name} — Episode ${epNum}`;
+
+        const custom = this.subMap[`${this.selectedAnime.id}_${epNum}`];
+        const iframe = document.getElementById('mainPlayer');
+        const vid = document.getElementById('nativeVideo');
+        const syncBar = document.getElementById('iframeSyncBar');
+
+        // Load Sinhala Subtitle cues if stored in DB
+        this.activeSubs = custom?.subData ? this.parseSubtitles(custom.subData) : [];
+
+        if (custom?.videoUrl) {
+          let targetUrl = custom.videoUrl.trim();
+          if (targetUrl.includes('<iframe')) {
+            const m = targetUrl.match(/src="([^"]+)"/);
+            if (m) targetUrl = m[1];
+          }
+
+          // Check if direct MP4 or HLS m3u8 stream
+          if (targetUrl.endsWith('.mp4') || targetUrl.includes('.m3u8')) {
+            iframe.classList.add('hidden');
+            iframe.src = '';
+            syncBar.classList.add('hidden');
+            vid.classList.remove('hidden');
+
+            if (targetUrl.includes('.m3u8') && Hls.isSupported()) {
+              if (this.hls) this.hls.destroy();
+              this.hls = new Hls();
+              this.hls.loadSource(targetUrl);
+              this.hls.attachMedia(vid);
+            } else {
+              vid.src = targetUrl;
+            }
+          } else {
+            // Iframe Embed mode
+            vid.classList.add('hidden');
+            vid.pause();
+            vid.src = '';
+            iframe.classList.remove('hidden');
+            iframe.src = targetUrl;
+            
+            if (this.activeSubs.length > 0) {
+              syncBar.classList.remove('hidden');
+            } else {
+              syncBar.classList.add('hidden');
+            }
+          }
+        }
+      }
+
+      async requestSub() {
+        if (!this.selectedAnime || !database) return;
+        const name = this.selectedAnime.title.english || this.selectedAnime.title.romaji;
+        const btn = document.getElementById('reqBtn');
+        btn.disabled = true;
+        btn.textContent = "Requested ✓";
+        btn.className = "bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-bold px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 cursor-not-allowed";
+        
+        await addDoc(collection(database, "sub_requests"), { 
+          name, 
+          anilistId: this.selectedAnime.id, 
+          posterUrl: this.selectedAnime.coverImage.large,
+          time: Date.now() 
+        });
+        alert(`Successfully requested Sinhala subtitles for "${name}"!`);
+      }
+
+      goHome() {
+        this.resetIframeTimer();
+        document.getElementById('viewDetails').classList.add('hidden');
+        document.getElementById('viewWatch').classList.add('hidden');
+        document.getElementById('viewStudio').classList.add('hidden');
+        document.getElementById('viewHome').classList.remove('hidden');
+        document.getElementById('mainPlayer').src = '';
+        const vid = document.getElementById('nativeVideo');
+        vid.pause();
+        vid.src = '';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      openLogin() {
+        document.getElementById('modalLogin').classList.remove('hidden');
+      }
+
+      verifyPass() {
+        if (document.getElementById('passInput').value === '1234') {
+          document.getElementById('modalLogin').classList.add('hidden');
+          document.getElementById('viewHome').classList.add('hidden');
+          document.getElementById('viewDetails').classList.add('hidden');
+          document.getElementById('viewWatch').classList.add('hidden');
+          document.getElementById('viewStudio').classList.remove('hidden');
+          this.loadRequests();
+        } else {
+          alert('Incorrect Passcode! (Default is 1234)');
+        }
+      }
+
+      async loadRequests() {
+        const listEl = document.getElementById('requestsList');
+        if (!database) return;
+        listEl.innerHTML = `<p class="text-xs text-slate-400">Refreshing...</p>`;
+        try {
+          const snap = await getDocs(collection(database, "sub_requests"));
+          const reqs = [];
+          snap.forEach(d => reqs.push({ docId: d.id, ...d.data() }));
+          reqs.sort((a, b) => b.time - a.time);
+
+          if (!reqs.length) {
+            listEl.innerHTML = `<p class="text-xs text-slate-400">No subtitle requests yet.</p>`;
+            return;
+          }
+
+          listEl.innerHTML = reqs.map(r => `
+            <div class="bg-[#111726] border border-white/5 p-3 rounded-xl flex items-center justify-between gap-2">
+              <div>
+                <h4 class="text-xs font-bold text-white">${r.name}</h4>
+                <p class="text-[10px] text-slate-400">AniList ID: ${r.anilistId}</p>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button onclick="app.studioPick(${r.anilistId}, '${r.name.replace(/'/g, "\\'")}', '${r.posterUrl || ''}')" class="bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition">Select</button>
+                <button onclick="app.deleteRequest('${r.docId}')" class="bg-rose-600/20 text-rose-300 hover:bg-rose-600 hover:text-white px-2 py-1 rounded-lg text-[10px] font-bold transition">✕</button>
+              </div>
+            </div>
+          `).join('');
+        } catch (e) {
+          listEl.innerHTML = `<p class="text-xs text-rose-400">Failed to load requests.</p>`;
+        }
+      }
+
+      async deleteRequest(docId) {
+        if (!database) return;
+        await deleteDoc(doc(database, "sub_requests", docId));
+        this.loadRequests();
+      }
+
+      async studioSearch() {
+        const queryVal = document.getElementById('studioQuery').value.trim();
+        if (!queryVal) return;
+        const data = await this.queryAniList(`query ($s: String) { Page(perPage: 5) { media(type: ANIME, search: $s) { id title { english romaji } coverImage { large } } } }`, { s: queryVal });
+        if (data?.Page?.media) {
+          document.getElementById('studioResults').innerHTML = data.Page.media.map(m => {
+            const t = m.title.english || m.title.romaji;
+            return `<div onclick="app.studioPick(${m.id}, '${t.replace(/'/g, "\\'")}', '${m.coverImage.large}')" class="cursor-pointer bg-[#111726] border border-white/5 p-2.5 rounded-xl text-xs hover:bg-indigo-600/30 transition">${t}</div>`;
+          }).join('');
+        }
+      }
+
+      studioPick(id, title, poster) {
+        document.getElementById('pubId').value = id;
+        document.getElementById('pubTitle').value = title;
+        document.getElementById('pubPoster').value = poster;
+        document.getElementById('studioResults').innerHTML = '';
+      }
+
+      async publishEp() {
+        if (!database) return alert("Database offline.");
+        const id = document.getElementById('pubId').value;
+        const animeTitle = document.getElementById('pubTitle').value;
+        const posterUrl = document.getElementById('pubPoster').value;
+        const epNum = document.getElementById('pubEp').value;
+        const videoUrl = document.getElementById('pubUrl').value;
+        const fileInput = document.getElementById('pubSubFile');
+
+        if (!id || !videoUrl) return alert("Please select series and provide a video URL.");
+
+        const btn = document.getElementById('publishBtn');
+        btn.disabled = true;
+        btn.textContent = "Uploading & Publishing...";
+
+        let subRawText = "";
+        if (fileInput.files && fileInput.files[0]) {
+          subRawText = await fileInput.files[0].text();
+        }
+
+        try {
+          await setDoc(doc(database, "sinhala_episodes", `${id}_${epNum}`), {
+            anilistId: Number(id),
+            animeTitle,
+            posterUrl,
+            epNum: Number(epNum),
+            videoUrl,
+            subData: subRawText
+          });
+          alert("Episode & Sinhala Subtitles published successfully!");
+          fileInput.value = '';
+          await this.loadSubbedDB();
+        } catch (err) {
+          alert("Error publishing episode: " + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "+ Publish Episode with Subtitles";
+        }
+      }
+    }
+
+    const app = new AnishiftCore();
+    window.app = app;
+    app.initCatalog();
+  </script>
+</body>
+</html>
