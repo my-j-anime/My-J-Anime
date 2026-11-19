@@ -59,6 +59,29 @@
       display: inline-block;
       line-height: 1.5;
     }
+    /* Custom Range Slider for Seek & Volume */
+    input[type="range"].player-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.2);
+      height: 5px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    input[type="range"].player-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ec4899;
+      box-shadow: 0 0 10px #ec4899;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    input[type="range"].player-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #06070d; }
     ::-webkit-scrollbar-thumb { background: #262b42; border-radius: 999px; }
@@ -69,7 +92,6 @@
   <!-- Navigation Bar -->
   <header class="sticky top-0 z-40 anime-glass border-b border-white/10 shadow-xl">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-      <!-- Brand Logo -->
       <div onclick="app.resetSearchAndGoHome()" class="flex items-center gap-2.5 cursor-pointer group shrink-0">
         <div class="w-9 h-9 rounded-xl neon-gradient flex items-center justify-center shadow-lg shadow-pink-500/30 font-black text-white text-lg">
           J
@@ -80,7 +102,7 @@
         </div>
       </div>
 
-      <!-- Working Search Bar with Live Search + Search Button + Clear Button -->
+      <!-- Working Search Bar -->
       <div class="flex-1 max-w-md relative flex items-center">
         <input id="searchInput" name="myjanime_global_search" type="text" autocomplete="off" autocorrect="off" spellcheck="false"
           placeholder="Search any anime (e.g. Naruto, Attack on Titan)..." 
@@ -108,7 +130,6 @@
           </button>
         </div>
 
-        <!-- Owner Studio (Visible ONLY to myjanime46@gmail.com) -->
         <button id="ownerStudioBtn" onclick="app.openLogin()" title="Owner Studio" class="hidden bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-500/40 text-amber-300 px-3 py-2 rounded-full text-xs font-semibold transition flex items-center gap-1">
           ⚙ <span class="hidden sm:inline">Studio</span>
         </button>
@@ -121,8 +142,6 @@
 
     <!-- HOME PAGE -->
     <div id="viewHome" class="space-y-10">
-      
-      <!-- Search Results Top Section (Appears immediately when searching!) -->
       <section id="searchResultsSection" class="hidden space-y-4 bg-[#0c0f1d] border border-pink-500/30 rounded-3xl p-5 sm:p-6 shadow-2xl">
         <div class="flex items-center justify-between gap-2">
           <h2 id="searchResultsTitle" class="text-lg sm:text-xl font-extrabold text-white tracking-wide flex items-center gap-2">
@@ -155,7 +174,7 @@
         </div>
       </div>
 
-      <!-- CONTINUE WATCHING / USER WATCH HISTORY SECTION -->
+      <!-- CONTINUE WATCHING SECTION -->
       <section id="homeHistorySection" class="hidden space-y-4">
         <div class="flex items-center justify-between">
           <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-wide flex items-center gap-2">
@@ -295,20 +314,102 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-4">
-          <div id="playerContainer" class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-pink-500/25 shadow-2xl group">
-            <div class="pointer-events-none absolute top-3 left-3 z-20 flex items-center gap-1.5 bg-black/65 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-full opacity-80">
+          <!-- VIDEO CONTAINER WITH CUSTOM PLAYER UI -->
+          <div id="playerContainer" onmousemove="app.showCustomControls()" class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-pink-500/25 shadow-2xl group select-none">
+            
+            <!-- Top Watermark Badge -->
+            <div class="pointer-events-none absolute top-3 left-3 z-20 flex items-center gap-1.5 bg-black/65 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-full opacity-85">
               <span class="w-2 h-2 rounded-full bg-pink-500"></span>
               <span class="text-[10px] font-black tracking-wider text-white">MY J ANIME PLAYER</span>
             </div>
 
-            <video id="nativeVideo" class="w-full h-full object-contain bg-black hidden" controls playsinline preload="metadata"></video>
-            <iframe id="mainPlayer" class="w-full h-full border-0" allowfullscreen allow="autoplay; encrypted-media; fullscreen"></iframe>
+            <!-- Native HTML5 Video (No browser default controls — powered by our Custom UI) -->
+            <video id="nativeVideo" onclick="app.toggleNativePlay()" ondblclick="app.toggleFullscreen()" class="w-full h-full object-contain bg-black hidden cursor-pointer" playsinline preload="metadata"></video>
             
-            <div id="captionOverlay" class="pointer-events-none absolute bottom-12 left-0 right-0 px-4 text-center z-30 transition-opacity">
+            <!-- Third-Party Iframe Fallback -->
+            <iframe id="mainPlayer" class="w-full h-full border-0" allowfullscreen allow="autoplay; encrypted-media; fullscreen"></iframe>
+
+            <!-- Center Big Play/Pause Indicator & Buffering Spinner -->
+            <div id="centerPlayOverlay" onclick="app.toggleNativePlay()" class="hidden absolute inset-0 z-20 flex items-center justify-center bg-black/30 cursor-pointer transition">
+              <div class="w-16 h-16 rounded-full neon-gradient flex items-center justify-center text-white text-2xl shadow-2xl shadow-pink-500/50 hover:scale-110 transition">
+                ▶
+              </div>
+            </div>
+            <div id="bufferingSpinner" class="hidden pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+              <div class="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+
+            <!-- Sinhala Subtitle Overlay -->
+            <div id="captionOverlay" class="pointer-events-none absolute bottom-16 left-0 right-0 px-4 text-center z-30 transition-all duration-200">
               <span id="captionText" class="sinhala-caption text-base sm:text-xl font-bold text-white hidden"></span>
+            </div>
+
+            <!-- CUSTOM HTML5 VIDEO CONTROLS BAR (Visible for Direct .MP4 & .M3U8) -->
+            <div id="customControlsBar" class="hidden absolute bottom-0 inset-x-0 z-30 bg-gradient-to-t from-black/95 via-black/80 to-transparent pt-8 pb-3 px-4 space-y-2 transition-opacity duration-300">
+              
+              <!-- Progress Seek Bar -->
+              <div class="flex items-center gap-3">
+                <input id="seekSlider" type="range" min="0" max="100" step="0.1" value="0" oninput="app.seekVideo(this.value)" class="player-slider w-full" />
+              </div>
+
+              <!-- Bottom Action Row -->
+              <div class="flex items-center justify-between gap-2 text-xs text-white">
+                <!-- Left: Play/Pause, Skip -10/+10, Volume, Time -->
+                <div class="flex items-center gap-2.5 sm:gap-3">
+                  <button id="btnPlayPause" onclick="app.toggleNativePlay()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-pink-600 flex items-center justify-center font-bold transition">
+                    ▶
+                  </button>
+                  <button onclick="app.skipSeconds(-10)" title="Rewind 10s" class="text-slate-300 hover:text-white font-bold px-1.5 py-1 rounded hover:bg-white/10 transition">
+                    ↺ 10s
+                  </button>
+                  <button onclick="app.skipSeconds(10)" title="Forward 10s" class="text-slate-300 hover:text-white font-bold px-1.5 py-1 rounded hover:bg-white/10 transition">
+                    10s ↻
+                  </button>
+
+                  <!-- Volume -->
+                  <div class="hidden sm:flex items-center gap-1.5">
+                    <button id="btnMute" onclick="app.toggleMute()" class="text-slate-300 hover:text-white text-sm">🔊</button>
+                    <input id="volSlider" type="range" min="0" max="1" step="0.05" value="1" oninput="app.setVolume(this.value)" class="player-slider w-16" />
+                  </div>
+
+                  <!-- Time Display -->
+                  <div class="font-mono text-[11px] text-slate-300">
+                    <span id="vidCurrentTime" class="text-white font-bold">00:00</span> / <span id="vidDuration">00:00</span>
+                  </div>
+                </div>
+
+                <!-- Right: Sinhala CC, Speed, Quality, Fullscreen -->
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                  <!-- Sinhala CC Quick Toggle -->
+                  <button id="playerCcBtn" onclick="app.toggleCC()" class="bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-bold px-2 py-1 rounded-md text-[11px] transition">
+                    සිං CC
+                  </button>
+
+                  <!-- Playback Speed Selector -->
+                  <select id="speedSelect" onchange="app.setPlaybackSpeed(this.value)" title="Playback Speed" class="bg-[#0e1222] border border-white/15 text-white rounded-md px-2 py-1 text-[11px] font-bold focus:outline-none focus:border-pink-500 cursor-pointer">
+                    <option value="0.5">0.5x</option>
+                    <option value="0.75">0.75x</option>
+                    <option value="1" selected>1.0x</option>
+                    <option value="1.25">1.25x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="2">2.0x</option>
+                  </select>
+
+                  <!-- HLS Video Quality Selector -->
+                  <select id="qualitySelect" onchange="app.setHlsQuality(this.value)" title="Video Quality" class="hidden bg-[#0e1222] border border-pink-500/40 text-pink-300 rounded-md px-2 py-1 text-[11px] font-bold focus:outline-none cursor-pointer">
+                    <option value="-1">Auto HD</option>
+                  </select>
+
+                  <!-- Fullscreen -->
+                  <button onclick="app.toggleFullscreen()" title="Fullscreen" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-violet-600 flex items-center justify-center font-bold transition">
+                    ⛶
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
+          <!-- Manual Subtitle Sync Bar (Only shown for Iframe mode) -->
           <div id="iframeSyncBar" class="hidden anime-glass rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs border border-pink-500/30">
             <div class="flex items-center gap-2">
               <button id="subTimerBtn" onclick="app.toggleIframeTimer()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-full transition">
@@ -320,6 +421,7 @@
             <div class="text-[11px] text-emerald-300 font-medium">✓ Sinhala Subtitle Ready — Press Start when video begins</div>
           </div>
 
+          <!-- Subtitle & Player Tools Bar -->
           <div class="anime-glass rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div class="flex items-center gap-2 font-bold text-pink-400 text-sm" id="watchEpHeading">Episode 1</div>
             <div class="flex flex-wrap items-center gap-2">
@@ -405,7 +507,7 @@
                 <input id="pubEp" type="number" value="1" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-pink-300 mb-1">Embed URL / Iframe / .MP4</label>
+                <label class="block text-xs font-semibold text-pink-300 mb-1">Direct .MP4 / .M3U8 / Embed URL</label>
                 <input id="pubUrl" type="text" autocomplete="off" placeholder="Paste video link..." class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
               </div>
             </div>
@@ -597,16 +699,191 @@
         this.adShieldOn = false;
         this.pendingSubDocId = null;
         this.searchDebounceTimer = null;
+        this.controlsHideTimer = null;
         
         this.iframeTime = 0;
         this.iframeRunning = false;
         this.iframeInterval = null;
 
-        const vid = document.getElementById('nativeVideo');
-        vid.addEventListener('timeupdate', () => this.renderCaptionAtTime(vid.currentTime));
-
+        this.setupNativePlayerEvents();
         this.generateBulkRows();
         this.initAuthListener();
+      }
+
+      // Bind Custom HTML5 Video Player Events & Keyboard Shortcuts
+      setupNativePlayerEvents() {
+        const vid = document.getElementById('nativeVideo');
+        const seekSlider = document.getElementById('seekSlider');
+        const curTimeEl = document.getElementById('vidCurrentTime');
+        const durTimeEl = document.getElementById('vidDuration');
+        const playBtn = document.getElementById('btnPlayPause');
+        const centerOverlay = document.getElementById('centerPlayOverlay');
+        const spinner = document.getElementById('bufferingSpinner');
+
+        vid.addEventListener('timeupdate', () => {
+          this.renderCaptionAtTime(vid.currentTime);
+          if (vid.duration) {
+            seekSlider.max = vid.duration;
+            seekSlider.value = vid.currentTime;
+            curTimeEl.textContent = this.formatSeconds(vid.currentTime);
+            durTimeEl.textContent = this.formatSeconds(vid.duration);
+          }
+        });
+
+        vid.addEventListener('loadedmetadata', () => {
+          seekSlider.max = vid.duration || 100;
+          durTimeEl.textContent = this.formatSeconds(vid.duration || 0);
+        });
+
+        vid.addEventListener('play', () => {
+          playBtn.textContent = '⏸';
+          centerOverlay.classList.add('hidden');
+        });
+
+        vid.addEventListener('pause', () => {
+          playBtn.textContent = '▶';
+          centerOverlay.classList.remove('hidden');
+          this.showCustomControls();
+        });
+
+        vid.addEventListener('waiting', () => spinner.classList.remove('hidden'));
+        vid.addEventListener('playing', () => spinner.classList.add('hidden'));
+        vid.addEventListener('canplay', () => spinner.classList.add('hidden'));
+
+        // Keyboard shortcuts when Watch Page is active
+        document.addEventListener('keydown', (e) => {
+          const watchView = document.getElementById('viewWatch');
+          if (watchView.classList.contains('hidden') || vid.classList.contains('hidden')) return;
+          if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+
+          if (e.code === 'Space') {
+            e.preventDefault();
+            this.toggleNativePlay();
+          } else if (e.code === 'ArrowRight') {
+            e.preventDefault();
+            this.skipSeconds(10);
+          } else if (e.code === 'ArrowLeft') {
+            e.preventDefault();
+            this.skipSeconds(-10);
+          } else if (e.key.toLowerCase() === 'f') {
+            e.preventDefault();
+            this.toggleFullscreen();
+          } else if (e.key.toLowerCase() === 'm') {
+            e.preventDefault();
+            this.toggleMute();
+          }
+        });
+      }
+
+      formatSeconds(sec) {
+        if (!sec || isNaN(sec)) return '00:00';
+        const h = Math.floor(sec / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        const s = Math.floor(sec % 60);
+        if (h > 0) {
+          return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      }
+
+      toggleNativePlay() {
+        const vid = document.getElementById('nativeVideo');
+        if (vid.classList.contains('hidden')) return;
+        if (vid.paused) {
+          vid.play().catch(() => {});
+        } else {
+          vid.pause();
+        }
+        this.showCustomControls();
+      }
+
+      seekVideo(val) {
+        const vid = document.getElementById('nativeVideo');
+        if (!vid.classList.contains('hidden')) {
+          vid.currentTime = parseFloat(val);
+        }
+      }
+
+      skipSeconds(delta) {
+        const vid = document.getElementById('nativeVideo');
+        if (!vid.classList.contains('hidden')) {
+          vid.currentTime = Math.max(0, Math.min(vid.duration || 0, vid.currentTime + delta));
+          this.showCustomControls();
+        }
+      }
+
+      toggleMute() {
+        const vid = document.getElementById('nativeVideo');
+        const btn = document.getElementById('btnMute');
+        const slider = document.getElementById('volSlider');
+        vid.muted = !vid.muted;
+        btn.textContent = vid.muted || vid.volume === 0 ? '🔇' : '🔊';
+        slider.value = vid.muted ? 0 : vid.volume;
+      }
+
+      setVolume(val) {
+        const vid = document.getElementById('nativeVideo');
+        const btn = document.getElementById('btnMute');
+        vid.volume = parseFloat(val);
+        vid.muted = vid.volume === 0;
+        btn.textContent = vid.muted ? '🔇' : '🔊';
+      }
+
+      setPlaybackSpeed(rate) {
+        const vid = document.getElementById('nativeVideo');
+        vid.playbackRate = parseFloat(rate);
+      }
+
+      setHlsQuality(levelIdx) {
+        if (this.hls) {
+          this.hls.currentLevel = parseInt(levelIdx);
+        }
+      }
+
+      toggleFullscreen() {
+        const container = document.getElementById('playerContainer');
+        if (!document.fullscreenElement) {
+          container.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+
+      showCustomControls() {
+        const bar = document.getElementById('customControlsBar');
+        const vid = document.getElementById('nativeVideo');
+        if (vid.classList.contains('hidden')) return;
+
+        bar.classList.remove('opacity-0', 'pointer-events-none');
+        clearTimeout(this.controlsHideTimer);
+        if (!vid.paused) {
+          this.controlsHideTimer = setTimeout(() => {
+            bar.classList.add('opacity-0', 'pointer-events-none');
+          }, 3000);
+        }
+      }
+
+      // Completely stops all background audio & video playback when leaving the watch page
+      stopAllMedia() {
+        this.resetIframeTimer();
+        const iframe = document.getElementById('mainPlayer');
+        if (iframe) {
+          iframe.src = 'about:blank';
+        }
+        if (this.hls) {
+          this.hls.destroy();
+          this.hls = null;
+        }
+        const vid = document.getElementById('nativeVideo');
+        if (vid) {
+          vid.pause();
+          vid.removeAttribute('src');
+          vid.load();
+        }
+        document.getElementById('customControlsBar').classList.add('hidden');
+        document.getElementById('centerPlayOverlay').classList.add('hidden');
+        document.getElementById('bufferingSpinner').classList.add('hidden');
+        document.getElementById('qualitySelect').classList.add('hidden');
       }
 
       initAuthListener() {
@@ -751,7 +1028,7 @@
       }
 
       openHistoryPage() {
-        this.resetIframeTimer();
+        this.stopAllMedia();
         document.getElementById('viewHome').classList.add('hidden');
         document.getElementById('viewDetails').classList.add('hidden');
         document.getElementById('viewWatch').classList.add('hidden');
@@ -877,16 +1154,23 @@
           btn.className = 'bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold px-3 py-1.5 rounded-full transition';
           iframe.removeAttribute('sandbox');
         }
-        if (currentSrc) iframe.src = currentSrc;
+        if (currentSrc && currentSrc !== 'about:blank') iframe.src = currentSrc;
       }
 
       toggleCC() {
         this.ccEnabled = !this.ccEnabled;
         const btn = document.getElementById('ccToggleBtn');
+        const playerBtn = document.getElementById('playerCcBtn');
         btn.textContent = this.ccEnabled ? 'CC: ON' : 'CC: OFF';
         btn.className = this.ccEnabled 
           ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold px-3.5 py-1.5 rounded-full transition'
           : 'bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold px-3.5 py-1.5 rounded-full transition';
+        
+        if (playerBtn) {
+          playerBtn.className = this.ccEnabled
+            ? 'bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-bold px-2 py-1 rounded-md text-[11px] transition'
+            : 'bg-white/10 border border-white/15 text-slate-400 font-bold px-2 py-1 rounded-md text-[11px] transition';
+        }
         if (!this.ccEnabled) document.getElementById('captionText').classList.add('hidden');
       }
 
@@ -947,9 +1231,7 @@
         reader.readAsText(file);
       }
 
-      // Dual-Engine Anime Fetcher (AniList Primary + Jikan MyAnimeList Fallback)
       async fetchAnimeList(searchTerm = '') {
-        // 1. Try AniList GraphQL
         try {
           const query = searchTerm
             ? `query ($s: String) { Page(page: 1, perPage: 24) { media(type: ANIME, search: $s, isAdult: false) { id title { romaji english } bannerImage coverImage { extraLarge large } episodes seasonYear format averageScore description } } }`
@@ -966,7 +1248,6 @@
           }
         } catch (e) {}
 
-        // 2. Fallback to Jikan API (MyAnimeList) so Search ALWAYS works 100%
         try {
           const url = searchTerm
             ? `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(searchTerm)}&limit=24&sfw=true`
@@ -1245,7 +1526,7 @@
 
       openDetails() {
         if (!this.selectedAnime) return;
-        this.resetIframeTimer();
+        this.stopAllMedia();
         document.getElementById('viewHome').classList.add('hidden');
         document.getElementById('viewHistory').classList.add('hidden');
         document.getElementById('viewWatch').classList.add('hidden');
@@ -1332,7 +1613,7 @@
       }
 
       playEp(epNum) {
-        this.resetIframeTimer();
+        this.stopAllMedia();
         this.currentEpNum = Number(epNum);
         document.getElementById('watchCrumbEp').textContent = `Episode ${epNum}`;
         const name = this.selectedAnime.title.english || this.selectedAnime.title.romaji;
@@ -1359,6 +1640,9 @@
         const iframe = document.getElementById('mainPlayer');
         const vid = document.getElementById('nativeVideo');
         const syncBar = document.getElementById('iframeSyncBar');
+        const customBar = document.getElementById('customControlsBar');
+        const centerOverlay = document.getElementById('centerPlayOverlay');
+        const qualitySel = document.getElementById('qualitySelect');
 
         this.activeSubs = custom?.subData ? this.parseSubtitles(custom.subData) : [];
 
@@ -1369,24 +1653,42 @@
             if (m) targetUrl = m[1];
           }
 
+          // Check if Direct .MP4 or .M3U8 Stream
           if (targetUrl.includes('.mp4') || targetUrl.includes('.m3u8')) {
             iframe.classList.add('hidden');
-            iframe.src = '';
             syncBar.classList.add('hidden');
             vid.classList.remove('hidden');
+            customBar.classList.remove('hidden');
+            centerOverlay.classList.remove('hidden');
+            document.getElementById('speedSelect').value = '1';
+            vid.playbackRate = 1;
 
             if (targetUrl.includes('.m3u8') && Hls.isSupported()) {
-              if (this.hls) this.hls.destroy();
               this.hls = new Hls();
               this.hls.loadSource(targetUrl);
               this.hls.attachMedia(vid);
+
+              // Populate HLS Video Quality Levels dynamically
+              this.hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+                if (data.levels && data.levels.length > 1) {
+                  qualitySel.innerHTML = `<option value="-1">Auto HD</option>` + 
+                    data.levels.map((lvl, idx) => `<option value="${idx}">${lvl.height ? lvl.height + 'p' : 'Level ' + (idx+1)}</option>`).join('');
+                  qualitySel.classList.remove('hidden');
+                } else {
+                  qualitySel.classList.add('hidden');
+                }
+                vid.play().catch(() => {});
+              });
             } else {
+              qualitySel.classList.add('hidden');
               vid.src = targetUrl;
+              vid.play().catch(() => {});
             }
           } else {
+            // Iframe Mode
             vid.classList.add('hidden');
-            vid.pause();
-            vid.src = '';
+            customBar.classList.add('hidden');
+            centerOverlay.classList.add('hidden');
             iframe.classList.remove('hidden');
             iframe.src = targetUrl;
             
@@ -1420,16 +1722,12 @@
       }
 
       goHome() {
-        this.resetIframeTimer();
+        this.stopAllMedia();
         document.getElementById('viewDetails').classList.add('hidden');
         document.getElementById('viewHistory').classList.add('hidden');
         document.getElementById('viewWatch').classList.add('hidden');
         document.getElementById('viewStudio').classList.add('hidden');
         document.getElementById('viewHome').classList.remove('hidden');
-        document.getElementById('mainPlayer').src = '';
-        const vid = document.getElementById('nativeVideo');
-        vid.pause();
-        vid.src = '';
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
@@ -1445,6 +1743,7 @@
           return alert("Access Denied!");
         }
         if (document.getElementById('passInput').value === '1234') {
+          this.stopAllMedia();
           document.getElementById('modalLogin').classList.add('hidden');
           document.getElementById('viewHome').classList.add('hidden');
           document.getElementById('viewHistory').classList.add('hidden');
@@ -1488,7 +1787,7 @@
           html += `
             <div class="flex items-center gap-2 bg-[#06070d] border border-white/10 p-2 rounded-xl">
               <span class="text-xs font-extrabold text-pink-400 w-12 shrink-0">Ep ${epNum}</span>
-              <input type="text" data-ep="${epNum}" placeholder="Video URL / Embed..." class="bulk-url-input flex-1 bg-[#0b0e18] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500" />
+              <input type="text" data-ep="${epNum}" placeholder="Direct .mp4 / .m3u8 / Embed..." class="bulk-url-input flex-1 bg-[#0b0e18] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500" />
               <label class="cursor-pointer bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 px-2 py-1.5 rounded-lg text-[10px] font-bold shrink-0">
                 <span id="subLbl_${epNum}">+ Sub</span>
                 <input type="file" accept=".srt,.ass" data-ep="${epNum}" onchange="document.getElementById('subLbl_${epNum}').textContent='✓ Sub'" class="bulk-sub-input hidden" />
