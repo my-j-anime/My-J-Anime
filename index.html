@@ -2503,12 +2503,22 @@
         sel.innerHTML = opts;
       }
 
-      async autoFetchEnglishSubtitle(animeTitle, epNum) {
+    async autoFetchEnglishSubtitle(animeTitle, epNum) {
         const subdlKey = document.getElementById('subdlApiKeyInput')?.value.trim() || localStorage.getItem('myjanime_subdl_key');
         if (!subdlKey) return null;
 
         try {
-          const searchUrl = `https://api.subdl.com/api/v1/subtitles?api_key=${encodeURIComponent(subdlKey)}&film_name=${encodeURIComponent(animeTitle)}&languages=EN&episode_number=${epNum}&type=tv`;
+          // Detect Season number from title (e.g., "Season 2", "2nd Season", "S2") and clean the base title
+          let seasonNum = 1;
+          let cleanTitle = animeTitle;
+
+          const seasonMatch = animeTitle.match(/(?:season\s*(\d+)|(\d+)(?:nd|rd|th)\s*season|\bs(\d+)\b)/i);
+          if (seasonMatch) {
+            seasonNum = Number(seasonMatch[1] || seasonMatch[2] || seasonMatch[3]);
+            cleanTitle = animeTitle.replace(/[:\-–]?\s*(?:season\s*\d+|\d+(?:nd|rd|th)\s*season|\bs\d+\b)/i, '').trim();
+          }
+
+          const searchUrl = `https://api.subdl.com/api/v1/subtitles?api_key=${encodeURIComponent(subdlKey)}&film_name=${encodeURIComponent(cleanTitle)}&languages=EN&season_number=${seasonNum}&episode_number=${epNum}&type=tv`;
           const res = await fetch(searchUrl);
           const data = await res.json();
 
@@ -2532,24 +2542,6 @@
           }
         } catch (e) {
           console.warn("Subdl fetch warning:", e);
-        }
-        return null;
-      }
-      async autoFetchEnglishSubtitle(animeTitle, epNum) {
-        try {
-          const query = encodeURIComponent(`${animeTitle} S01E${String(epNum).padStart(2, '0')}`);
-          const res = await fetch(`https://rest.opensubtitles.org/search/query-${query}/sublanguageid-eng`, {
-            headers: { 'X-User-Agent': 'TemporaryUserAgent' }
-          });
-          if (!res.ok) return null;
-          const list = await res.json();
-          if (list && list.length > 0 && list[0].SubDownloadLink) {
-            const gzUrl = list[0].SubDownloadLink.replace('.gz', '');
-            const subRes = await fetch(gzUrl);
-            if (subRes.ok) return await subRes.text();
-          }
-        } catch (e) {
-          console.warn("Auto-fetch fallback triggered:", e);
         }
         return null;
       }
