@@ -79,8 +79,13 @@
           class="w-full bg-[#0b0e18] border border-white/10 rounded-full px-4 py-2 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-pink-500 transition shadow-inner" />
       </div>
 
-      <!-- Right Controls: User Login & Owner Studio -->
+      <!-- Right Controls: History, User Login & Owner Studio -->
       <div class="flex items-center gap-2 shrink-0">
+        <!-- History Quick Button (Visible when logged in) -->
+        <button id="navHistoryBtn" onclick="app.openHistoryPage()" class="hidden bg-violet-500/15 hover:bg-violet-500/25 border border-violet-500/30 text-violet-300 px-3 py-2 rounded-full text-xs font-semibold transition flex items-center gap-1.5">
+          <span>🕒</span> <span class="hidden md:inline">History</span>
+        </button>
+
         <!-- User Profile / Sign In Button -->
         <div id="userNavArea">
           <button onclick="app.openUserModal()" class="neon-gradient text-white font-bold px-4 py-2 rounded-full text-xs shadow-lg shadow-pink-500/25 transition flex items-center gap-1.5">
@@ -122,6 +127,18 @@
         </div>
       </div>
 
+      <!-- CONTINUE WATCHING / USER WATCH HISTORY SECTION (Shown when signed in & has history) -->
+      <section id="homeHistorySection" class="hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-wide flex items-center gap-2">
+            <span>🕒 Continue Watching</span>
+            <span class="text-xs font-medium text-pink-400 bg-pink-500/10 border border-pink-500/20 px-2.5 py-0.5 rounded-full">Your History</span>
+          </h2>
+          <button onclick="app.openHistoryPage()" class="text-xs text-slate-400 hover:text-pink-400 font-semibold transition">View All →</button>
+        </div>
+        <div id="gridHomeHistory" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+      </section>
+
       <!-- Sinhala Subtitled Section -->
       <section class="space-y-4">
         <div class="flex items-center justify-between">
@@ -147,6 +164,30 @@
           <p class="text-sm text-slate-400 col-span-full py-6 text-center">Connecting to AniList Network...</p>
         </div>
       </section>
+    </div>
+
+    <!-- DEDICATED USER WATCH HISTORY PAGE -->
+    <div id="viewHistory" class="hidden space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+        <div>
+          <div class="text-xs text-slate-400 flex items-center gap-2 mb-1">
+            <span onclick="app.goHome()" class="cursor-pointer hover:text-pink-400 transition">Home</span> › <span class="text-slate-200">Watch History</span>
+          </div>
+          <h2 class="text-2xl font-black text-white flex items-center gap-2">🕒 My Watch History</h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="app.clearAllHistory()" class="bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 px-4 py-2 rounded-full text-xs font-bold transition">
+            🗑 Clear All History
+          </button>
+          <button onclick="app.goHome()" class="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full text-xs font-semibold transition">
+            ← Back to Home
+          </button>
+        </div>
+      </div>
+
+      <div id="gridFullHistory" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <p class="text-sm text-slate-400 col-span-full py-8 text-center">No watch history recorded yet.</p>
+      </div>
     </div>
 
     <!-- DETAILS PAGE -->
@@ -335,7 +376,7 @@
       <div class="flex items-center justify-between relative z-10">
         <div>
           <h3 id="authModalTitle" class="text-xl font-black text-white anime-font">Welcome Back! ✨</h3>
-          <p class="text-xs text-slate-400 mt-0.5">Sign in to request Sinhala subtitles & sync favorites</p>
+          <p class="text-xs text-slate-400 mt-0.5">Sign in to save your Watch History & request subtitles</p>
         </div>
         <button onclick="app.closeUserModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-slate-400 hover:text-white transition">✕</button>
       </div>
@@ -427,6 +468,7 @@
       constructor() {
         this.selectedAnime = null;
         this.currentUser = null;
+        this.userHistory = [];
         this.subMap = {};
         this.activeSubs = [];
         this.ccEnabled = true;
@@ -444,13 +486,15 @@
         this.initAuthListener();
       }
 
-      // Listen for User Sign-In / Sign-Out state
+      // Listen for User Sign-In / Sign-Out state & Load Watch History
       initAuthListener() {
         if (!auth) return;
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
           const navArea = document.getElementById('userNavArea');
+          const navHistoryBtn = document.getElementById('navHistoryBtn');
           if (user && !user.isAnonymous) {
             this.currentUser = user;
+            navHistoryBtn.classList.remove('hidden');
             const displayName = user.displayName || user.email.split('@')[0];
             const avatar = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=ec4899&color=fff`;
             navArea.innerHTML = `
@@ -460,8 +504,12 @@
                 <button onclick="app.logoutUser()" title="Sign Out" class="text-[10px] text-rose-400 hover:text-rose-300 font-bold ml-1">Exit</button>
               </div>
             `;
+            await this.loadUserHistory();
           } else {
             this.currentUser = null;
+            this.userHistory = [];
+            navHistoryBtn.classList.add('hidden');
+            document.getElementById('homeHistorySection').classList.add('hidden');
             if (!user) signInAnonymously(auth).catch(() => {});
             navArea.innerHTML = `
               <button onclick="app.openUserModal()" class="neon-gradient text-white font-bold px-4 py-2 rounded-full text-xs shadow-lg shadow-pink-500/25 transition flex items-center gap-1.5">
@@ -470,6 +518,124 @@
             `;
           }
         });
+      }
+
+      // Save Watched Episode to Registered User's History in Firestore
+      async saveToHistory(anime, epNum) {
+        if (!this.currentUser || !database || !anime) return;
+        const docId = `${this.currentUser.uid}_${anime.id}`;
+        const historyItem = {
+          uid: this.currentUser.uid,
+          anilistId: anime.id,
+          animeTitle: anime.title.english || anime.title.romaji,
+          posterUrl: anime.coverImage.large || '',
+          lastEp: Number(epNum),
+          animeData: JSON.stringify(anime),
+          updatedAt: Date.now()
+        };
+        try {
+          await setDoc(doc(database, "watch_history", docId), historyItem);
+          await this.loadUserHistory();
+        } catch (e) {
+          console.warn("History save error:", e);
+        }
+      }
+
+      // Load Registered User's Watch History
+      async loadUserHistory() {
+        if (!this.currentUser || !database) return;
+        try {
+          const snap = await getDocs(collection(database, "watch_history"));
+          const items = [];
+          snap.forEach(d => {
+            const data = d.data();
+            if (data.uid === this.currentUser.uid) {
+              items.push({ docId: d.id, ...data });
+            }
+          });
+          items.sort((a, b) => b.updatedAt - a.updatedAt);
+          this.userHistory = items;
+          this.renderHistoryGrids();
+        } catch (e) {
+          console.warn("History load error:", e);
+        }
+      }
+
+      renderHistoryGrids() {
+        const homeSec = document.getElementById('homeHistorySection');
+        const homeGrid = document.getElementById('gridHomeHistory');
+        const fullGrid = document.getElementById('gridFullHistory');
+
+        if (!this.userHistory.length) {
+          homeSec.classList.add('hidden');
+          fullGrid.innerHTML = `<p class="text-sm text-slate-400 col-span-full py-8 text-center">No watch history recorded yet. Start watching an anime to track it here!</p>`;
+          return;
+        }
+
+        homeSec.classList.remove('hidden');
+
+        const buildCards = (list) => list.map(item => {
+          const encoded = encodeURIComponent(item.animeData);
+          const timeStr = new Date(item.updatedAt).toLocaleDateString();
+          return `
+            <div class="group relative anime-card rounded-2xl overflow-hidden flex flex-col">
+              <button onclick="event.stopPropagation(); app.removeHistoryItem('${item.docId}')" title="Remove from history" class="absolute top-2 right-2 z-20 w-6 h-6 rounded-full bg-black/75 hover:bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition">✕</button>
+              <div onclick="app.resumeFromHistory('${encoded}', ${item.lastEp})" class="cursor-pointer flex-1 flex flex-col">
+                <div class="relative aspect-[3/4] bg-slate-900 overflow-hidden">
+                  <img src="${item.posterUrl}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-[#06070d] via-transparent to-transparent opacity-70"></div>
+                  <span class="absolute top-2 left-2 bg-violet-600/90 backdrop-blur-md text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow">Watched Ep ${item.lastEp}</span>
+                  <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                    <span class="w-11 h-11 rounded-full neon-gradient flex items-center justify-center text-white font-bold shadow-xl">▶</span>
+                  </div>
+                </div>
+                <div class="p-3 flex-1 flex flex-col justify-between">
+                  <h3 class="text-xs font-bold text-slate-100 line-clamp-2 group-hover:text-pink-400 transition">${item.animeTitle}</h3>
+                  <p class="text-[10px] text-slate-500 mt-1">Last watched: ${timeStr}</p>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        homeGrid.innerHTML = buildCards(this.userHistory.slice(0, 6));
+        fullGrid.innerHTML = buildCards(this.userHistory);
+      }
+
+      resumeFromHistory(encodedAnime, epNum) {
+        this.selectedAnime = JSON.parse(decodeURIComponent(encodedAnime));
+        const hasPublished = Object.keys(this.subMap).some(k => k.startsWith(this.selectedAnime.id + '_'));
+        if (hasPublished) {
+          this.startWatchSession(epNum);
+        } else {
+          this.openDetails();
+        }
+      }
+
+      async removeHistoryItem(docId) {
+        if (!database) return;
+        await deleteDoc(doc(database, "watch_history", docId));
+        await this.loadUserHistory();
+      }
+
+      async clearAllHistory() {
+        if (!database || !this.userHistory.length) return;
+        if (!confirm("Are you sure you want to clear your entire watch history?")) return;
+        for (const item of this.userHistory) {
+          await deleteDoc(doc(database, "watch_history", item.docId));
+        }
+        await this.loadUserHistory();
+      }
+
+      openHistoryPage() {
+        this.resetIframeTimer();
+        document.getElementById('viewHome').classList.add('hidden');
+        document.getElementById('viewDetails').classList.add('hidden');
+        document.getElementById('viewWatch').classList.add('hidden');
+        document.getElementById('viewStudio').classList.add('hidden');
+        document.getElementById('viewHistory').classList.remove('hidden');
+        this.loadUserHistory();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
       openUserModal() {
@@ -512,7 +678,7 @@
         try {
           await createUserWithEmailAndPassword(auth, email, pass);
           this.closeUserModal();
-          alert("Account created! Welcome to MY J ANIME.");
+          alert("Account created! Your watch history will now be saved automatically.");
         } catch (err) {
           alert("Registration Error: " + err.message);
         }
@@ -521,6 +687,7 @@
       async logoutUser() {
         if (!auth) return;
         await signOut(auth);
+        this.goHome();
       }
 
       parseSubtitles(rawText) {
@@ -788,6 +955,7 @@
         if (!this.selectedAnime) return;
         this.resetIframeTimer();
         document.getElementById('viewHome').classList.add('hidden');
+        document.getElementById('viewHistory').classList.add('hidden');
         document.getElementById('viewWatch').classList.add('hidden');
         document.getElementById('viewStudio').classList.add('hidden');
         document.getElementById('viewDetails').classList.remove('hidden');
@@ -821,8 +989,9 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
-      startWatchSession() {
+      startWatchSession(startEpNum = null) {
         document.getElementById('viewDetails').classList.add('hidden');
+        document.getElementById('viewHistory').classList.add('hidden');
         document.getElementById('viewWatch').classList.remove('hidden');
         const name = this.selectedAnime.title.english || this.selectedAnime.title.romaji;
         document.getElementById('watchCrumbAnime').textContent = name;
@@ -838,7 +1007,8 @@
           listContainer.innerHTML = publishedEps.map(ep => 
             `<button onclick="app.playEp(${ep.epNum})" class="py-2 rounded-xl text-xs font-bold bg-[#0b0e18] hover:bg-pink-600 border border-white/10 transition shadow">${ep.epNum}</button>`
           ).join('');
-          this.playEp(publishedEps[0].epNum);
+          const epToPlay = startEpNum && publishedEps.some(e => e.epNum === startEpNum) ? startEpNum : publishedEps[0].epNum;
+          this.playEp(epToPlay);
         } else {
           listContainer.innerHTML = `<p class="text-xs text-slate-400 col-span-full">No episodes uploaded yet.</p>`;
         }
@@ -850,6 +1020,9 @@
         document.getElementById('watchCrumbEp').textContent = `Episode ${epNum}`;
         const name = this.selectedAnime.title.english || this.selectedAnime.title.romaji;
         document.getElementById('watchEpHeading').textContent = `${name} — Episode ${epNum}`;
+
+        // Save to logged-in user's watch history
+        this.saveToHistory(this.selectedAnime, epNum);
 
         const custom = this.subMap[`${this.selectedAnime.id}_${epNum}`];
         const iframe = document.getElementById('mainPlayer');
@@ -917,6 +1090,7 @@
       goHome() {
         this.resetIframeTimer();
         document.getElementById('viewDetails').classList.add('hidden');
+        document.getElementById('viewHistory').classList.add('hidden');
         document.getElementById('viewWatch').classList.add('hidden');
         document.getElementById('viewStudio').classList.add('hidden');
         document.getElementById('viewHome').classList.remove('hidden');
@@ -935,6 +1109,7 @@
         if (document.getElementById('passInput').value === '1234') {
           document.getElementById('modalLogin').classList.add('hidden');
           document.getElementById('viewHome').classList.add('hidden');
+          document.getElementById('viewHistory').classList.add('hidden');
           document.getElementById('viewDetails').classList.add('hidden');
           document.getElementById('viewWatch').classList.add('hidden');
           document.getElementById('viewStudio').classList.remove('hidden');
