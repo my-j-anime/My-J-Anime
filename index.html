@@ -12,7 +12,10 @@
   <style>
     body {
       font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif;
-      background-color: #0b0c10;
+      background-color: #090a10;
+      background-image: radial-gradient(circle at 15% 10%, rgba(139, 92, 246, 0.08), transparent 35%),
+                        radial-gradient(circle at 85% 25%, rgba(6, 182, 212, 0.08), transparent 35%),
+                        radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.06), transparent 40%);
       color: #f1f5f9;
     }
     h1, h2, h3, .anime-font {
@@ -22,66 +25,68 @@
     input:-webkit-autofill:hover, 
     input:-webkit-autofill:focus {
       -webkit-text-fill-color: #ffffff;
-      -webkit-box-shadow: 0 0 0px 1000px #14161f inset;
+      -webkit-box-shadow: 0 0 0px 1000px #141622 inset;
       transition: background-color 5000s ease-in-out 0s;
     }
     .panel-dark {
-      background-color: #12141c;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background-color: #11131e;
+      border: 1px solid rgba(168, 85, 247, 0.14);
     }
     .anime-card {
-      background-color: #12141c;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background-color: #11131e;
+      border: 1px solid rgba(255, 255, 255, 0.07);
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .anime-card:hover {
       transform: translateY(-5px);
-      border-color: rgba(56, 189, 248, 0.5);
-      box-shadow: 0 12px 28px -10px rgba(56, 189, 248, 0.28);
+      border-color: rgba(236, 72, 153, 0.55);
+      box-shadow: 0 12px 28px -10px rgba(139, 92, 246, 0.35);
     }
     .brand-accent {
-      background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
+      background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 50%, #ec4899 100%);
     }
     .brand-accent:hover {
-      background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+      background: linear-gradient(135deg, #0891b2 0%, #7c3aed 50%, #db2777 100%);
+    }
+    .brand-text-mix {
+      background: linear-gradient(90deg, #38bdf8, #c084fc, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
     .sinhala-caption {
       font-family: 'Noto Sans Sinhala', sans-serif;
       text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.98), 0px 0px 12px rgba(0, 0, 0, 0.95);
-      background: rgba(11, 12, 16, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(11, 12, 16, 0.90);
+      border: 1px solid rgba(192, 132, 252, 0.3);
       padding: 6px 18px;
       border-radius: 8px;
       display: inline-block;
       line-height: 1.5;
     }
-    /* Hide scrollbar for genre bar */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #0b0c10; }
-    ::-webkit-scrollbar-thumb { background: #232736; border-radius: 999px; }
+    ::-webkit-scrollbar-track { background: #090a10; }
+    ::-webkit-scrollbar-thumb { background: #2a243d; border-radius: 999px; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
+<body class="min-h-screen flex flex-col selection:bg-pink-500 selection:text-white">
 
-  <!-- SIDEBAR DRAWER OVERLAY & PANEL (Triggered by 3-line Hamburger Menu) -->
-  <div id="sideDrawerOverlay" onclick="app.closeSideDrawer()" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm transition-opacity"></div>
-  <aside id="sideDrawer" class="fixed top-0 left-0 bottom-0 z-50 w-64 bg-[#10121a] border-r border-white/10 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between shadow-2xl">
+  <!-- SIDEBAR DRAWER OVERLAY & PANEL -->
+  <div id="sideDrawerOverlay" onclick="app.closeSideDrawer()" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm transition-opacity"></div>
+  <aside id="sideDrawer" class="fixed top-0 left-0 bottom-0 z-50 w-64 bg-[#0e1019] border-r border-purple-500/20 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between shadow-2xl">
     <div class="p-4 space-y-5 overflow-y-auto">
-      <!-- Drawer Header -->
       <div class="flex items-center justify-between border-b border-white/10 pb-3.5">
         <div onclick="app.resetSearchAndGoHome(); app.closeSideDrawer();" class="cursor-pointer flex items-center gap-1.5">
-          <span class="text-xl font-black tracking-wider text-white anime-font">MY <span class="text-sky-400">J ANIME</span></span>
+          <span class="text-xl font-black tracking-wider text-white anime-font">MY <span class="brand-text-mix">J ANIME</span></span>
         </div>
-        <button onclick="app.closeSideDrawer()" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/15 text-slate-400 hover:text-white flex items-center justify-center text-xs font-bold transition">
+        <button onclick="app.closeSideDrawer()" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 flex items-center justify-center text-xs font-bold transition">
           ✕
         </button>
       </div>
 
-      <!-- Main Navigation Links -->
       <nav class="space-y-1 text-xs font-semibold">
-        <button onclick="app.navFilter('home')" id="sideBtn_home" class="side-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-sky-500/15 text-sky-400 font-bold transition">
+        <button onclick="app.navFilter('home')" id="sideBtn_home" class="side-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-sky-500/20 via-purple-500/20 to-pink-500/20 text-sky-300 border border-purple-500/30 font-bold transition">
           <span>🏠</span> <span>Home</span>
         </button>
         <button onclick="app.navFilter('sinhala')" id="sideBtn_sinhala" class="side-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-white/5 hover:text-white transition">
@@ -107,9 +112,8 @@
         </button>
       </nav>
 
-      <!-- Community / Tools -->
       <div class="pt-3 border-t border-white/10 space-y-1.5">
-        <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Community & Tools</p>
+        <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-purple-400">Community & Tools</p>
         <button onclick="app.closeSideDrawer(); app.scrollToSchedule();" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/5 hover:text-white transition">
           <span>🗓</span> <span>Airing Schedule</span>
         </button>
@@ -119,11 +123,10 @@
       </div>
     </div>
 
-    <!-- Drawer Bottom Status & Profile -->
-    <div class="p-3.5 border-t border-white/10 bg-[#0c0e14] space-y-2.5">
+    <div class="p-3.5 border-t border-white/10 bg-[#0a0b12] space-y-2.5">
       <div class="flex items-center justify-between text-[10px] text-slate-400">
         <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Status • Online</span>
-        <span class="bg-white/5 px-2 py-0.5 rounded text-slate-400 font-mono">v3.0</span>
+        <span class="bg-purple-500/15 border border-purple-500/30 px-2 py-0.5 rounded text-purple-300 font-mono">v4.0</span>
       </div>
       <div id="sideUserBox" class="flex items-center justify-between bg-white/5 p-2 rounded-xl">
         <span class="text-xs font-bold text-slate-300 truncate">Guest Viewer</span>
@@ -132,43 +135,44 @@
     </div>
   </aside>
 
-  <!-- TOP NAVIGATION BAR (Matching ANISHIFT Layout) -->
-  <header class="sticky top-0 z-40 bg-[#0e1017]/95 backdrop-blur-md border-b border-white/10 shadow-lg">
-    <div class="max-w-[1440px] mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
-      
-      <!-- Left: 3-Line Hamburger Button + Brand Logo -->
-      <div class="flex items-center gap-3 shrink-0">
-        <button onclick="app.openSideDrawer()" title="Menu" class="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex flex-col items-center justify-center gap-1.5 transition">
-          <span class="w-4 h-0.5 bg-slate-200 rounded-full"></span>
-          <span class="w-4 h-0.5 bg-slate-200 rounded-full"></span>
-          <span class="w-4 h-0.5 bg-slate-200 rounded-full"></span>
+  <!-- TOP NAVIGATION BAR -->
+  <header class="sticky top-0 z-40 bg-[#0d0f18]/95 backdrop-blur-md border-b border-purple-500/20 shadow-lg">
+    <div class="max-w-[1600px] mx-auto px-3 sm:px-5 py-2.5 flex items-center justify-between gap-2.5">
+      <div class="flex items-center gap-2.5 shrink-0">
+        <button onclick="app.openSideDrawer()" title="Menu" class="w-9 h-9 rounded-lg bg-white/5 hover:bg-purple-500/20 border border-white/10 flex flex-col items-center justify-center gap-1.5 transition">
+          <span class="w-4 h-0.5 bg-sky-400 rounded-full"></span>
+          <span class="w-4 h-0.5 bg-purple-400 rounded-full"></span>
+          <span class="w-4 h-0.5 bg-pink-400 rounded-full"></span>
         </button>
 
         <div onclick="app.resetSearchAndGoHome()" class="flex items-center gap-1.5 cursor-pointer select-none">
-          <span class="text-xl sm:text-2xl font-black tracking-wider text-white anime-font">MY <span class="text-sky-400">J ANIME</span></span>
+          <span class="text-lg sm:text-2xl font-black tracking-wider text-white anime-font">MY <span class="brand-text-mix">J ANIME</span></span>
         </div>
       </div>
 
-      <!-- Center: Wide Dark Search Bar -->
-      <div class="flex-1 max-w-xl relative flex items-center">
-        <span class="absolute left-3.5 text-slate-500 text-xs pointer-events-none">🔍</span>
-        <input id="searchInput" name="myjanime_global_search" type="text" autocomplete="off" autocorrect="off" spellcheck="false"
-          placeholder="Search Anime..." 
-          oninput="app.handleLiveSearch()"
-          onkeydown="if(event.key==='Enter') app.searchAnime()"
-          class="w-full bg-[#151822] border border-white/10 rounded-lg pl-9 pr-20 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition" />
-        
-        <button id="clearSearchBtn" onclick="app.resetSearchAndGoHome()" title="Clear" class="hidden absolute right-11 text-slate-400 hover:text-white text-xs px-1.5 py-1">
-          ✕
-        </button>
-        <button onclick="app.searchAnime()" title="Search" class="absolute right-1.5 bg-white/10 hover:bg-sky-500 text-slate-200 hover:text-white rounded-md px-2.5 py-1 text-xs font-bold transition">
+      <!-- Search Bar + Filter Button (Matching Screenshot 1 & 2) -->
+      <div class="flex-1 max-w-2xl flex items-center gap-1.5">
+        <div class="relative flex-1 flex items-center">
+          <span class="absolute left-3.5 text-purple-400 text-xs pointer-events-none">🔍</span>
+          <input id="searchInput" name="myjanime_global_search" type="text" autocomplete="off" autocorrect="off" spellcheck="false"
+            placeholder="Search Anime..." 
+            oninput="app.handleLiveSearch()"
+            onkeydown="if(event.key==='Enter') app.applyAdvancedSearch()"
+            class="w-full bg-[#151826] border border-purple-500/25 rounded-lg pl-9 pr-9 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 transition" />
+          <button id="clearSearchBtn" onclick="app.resetSearchAndGoHome()" title="Clear" class="hidden absolute right-2.5 text-rose-400 hover:text-white text-xs font-bold px-1.5 py-1">
+            ✕
+          </button>
+        </div>
+        <button onclick="app.applyAdvancedSearch()" title="Search" class="bg-[#181b2c] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-sky-300 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold transition">
           🔍
+        </button>
+        <button onclick="app.toggleAdvancedFilter()" title="Advanced Filters" class="bg-[#181b2c] hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold transition">
+          🎛
         </button>
       </div>
 
-      <!-- Right: Quick Actions & User Profile -->
       <div class="flex items-center gap-2 shrink-0">
-        <button id="navHistoryBtn" onclick="app.openHistoryPage()" title="Watch History" class="hidden bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+        <button id="navHistoryBtn" onclick="app.openHistoryPage()" title="Watch History" class="hidden bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-200 px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
           <span>🕒</span> <span class="hidden lg:inline">History</span>
         </button>
 
@@ -177,7 +181,7 @@
         </button>
 
         <div id="userNavArea">
-          <button onclick="app.openUserModal()" class="brand-accent text-white font-bold px-4 py-2 rounded-lg text-xs shadow transition flex items-center gap-1.5">
+          <button onclick="app.openUserModal()" class="brand-accent text-white font-bold px-3.5 sm:px-4 py-2 rounded-lg text-xs shadow transition flex items-center gap-1.5">
             <span>👤</span> <span>Sign In</span>
           </button>
         </div>
@@ -185,66 +189,126 @@
     </div>
   </header>
 
-  <!-- MAIN CONTENT CONTAINER -->
-  <main class="flex-1 max-w-[1440px] mx-auto w-full px-4 py-4 space-y-6">
+  <!-- MAIN CONTENT CONTAINER (Full Responsive Fit) -->
+  <main class="flex-1 max-w-[1600px] mx-auto w-full px-3 sm:px-5 py-4 space-y-6">
+
+    <!-- ADVANCED MULTI-FILTER PANEL (Matching Screenshot 2) -->
+    <section id="advancedFilterPanel" class="hidden panel-dark rounded-2xl p-4 sm:p-5 space-y-4 border border-purple-500/30 shadow-2xl">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-[11px] font-bold text-sky-400 mb-1">Season</label>
+          <select id="fltSeason" class="w-full bg-[#0b0c12] border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500">
+            <option value="">Any Season</option>
+            <option value="WINTER">Winter</option>
+            <option value="SPRING">Spring</option>
+            <option value="SUMMER">Summer</option>
+            <option value="FALL">Fall</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-purple-400 mb-1">Source Material</label>
+          <select id="fltSource" class="w-full bg-[#0b0c12] border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+            <option value="">Any Source</option>
+            <option value="MANGA">Manga</option>
+            <option value="LIGHT_NOVEL">Light Novel</option>
+            <option value="ORIGINAL">Original</option>
+            <option value="VISUAL_NOVEL">Visual Novel</option>
+            <option value="VIDEO_GAME">Video Game</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-pink-400 mb-1">Country of Origin</label>
+          <select id="fltCountry" class="w-full bg-[#0b0c12] border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500">
+            <option value="">Any Country</option>
+            <option value="JP">Japan</option>
+            <option value="CN">China (Donghua)</option>
+            <option value="KR">South Korea</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-emerald-400 mb-1">Format / Sub</label>
+          <select id="fltFormat" class="w-full bg-[#0b0c12] border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+            <option value="">Any Format</option>
+            <option value="SINHALA_ONLY">🇱🇰 Sinhala Subbed Only</option>
+            <option value="TV">TV Series</option>
+            <option value="MOVIE">Movie</option>
+            <option value="OVA">OVA / ONA</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-amber-400 mb-1">Sort By</label>
+          <select id="fltSort" class="w-full bg-[#0b0c12] border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+            <option value="POPULARITY_DESC">Popularity</option>
+            <option value="TRENDING_DESC">Trending</option>
+            <option value="SCORE_DESC">Top Score</option>
+            <option value="START_DATE_DESC">Newest Release</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 pt-1">
+        <button onclick="app.applyAdvancedSearch()" class="brand-accent text-white font-bold px-4 py-1.5 rounded-lg text-xs flex items-center gap-1.5 shadow">
+          <span>▼</span> <span>Apply</span>
+        </button>
+        <button onclick="app.resetAdvancedFilter()" class="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-bold px-3.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition">
+          <span>↻</span> <span>Reset</span>
+        </button>
+        <button onclick="app.toggleAdvancedFilter(false)" class="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-bold px-3.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition">
+          <span>▲</span> <span>Collapse</span>
+        </button>
+      </div>
+    </section>
 
     <!-- HOME VIEW -->
     <div id="viewHome" class="space-y-6">
 
-      <!-- Announcement Bar (Matching Screenshot) -->
-      <div id="announcementBar" class="panel-dark rounded-xl px-4 py-2.5 flex items-center justify-between gap-3 text-xs border-l-4 border-l-amber-400">
-        <div class="flex items-center gap-2 text-amber-300 font-medium truncate">
-          <span>⚡</span>
-          <span>Welcome to MY J ANIME — Stream Trending Anime & Sinhala Subtitled Collections!</span>
-        </div>
-        <button onclick="document.getElementById('announcementBar').classList.add('hidden')" class="text-slate-500 hover:text-white text-xs font-bold">✕</button>
-      </div>
-
-      <!-- Search / Filter Results Panel (Appears at top when searching or filtering by Genre/Nav) -->
-      <section id="searchResultsSection" class="hidden panel-dark rounded-2xl p-5 space-y-4 border border-sky-500/30 shadow-2xl">
+      <!-- Search / Filter Results Catalog Grid (8 Columns on XL like Screenshot 2) -->
+      <section id="searchResultsSection" class="hidden panel-dark rounded-2xl p-4 sm:p-5 space-y-4 border border-pink-500/30 shadow-2xl">
         <div class="flex items-center justify-between gap-2">
           <h2 id="searchResultsTitle" class="text-base sm:text-lg font-extrabold text-white tracking-wide flex items-center gap-2">
-            <span>🔍 Search Results</span>
+            <span>🔍 Filtered Anime Results</span>
           </h2>
-          <button onclick="app.resetSearchAndGoHome()" class="bg-white/10 hover:bg-white/20 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition">
-            ✕ Reset Filter
+          <button onclick="app.resetSearchAndGoHome()" class="bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-200 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+            ✕ Close Results
           </button>
         </div>
-        <div id="gridSearchResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+        <div id="gridSearchResults" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8 gap-3"></div>
       </section>
 
-      <!-- SPOTLIGHT HERO SLIDER (Matching Screenshot 1) -->
-      <div id="heroBanner" class="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl min-h-[300px] sm:min-h-[360px] flex items-end p-6 sm:p-10 bg-[#12141c]">
+      <!-- SPOTLIGHT HERO SLIDER -->
+      <div id="heroBanner" class="relative rounded-2xl overflow-hidden border border-purple-500/25 shadow-2xl min-h-[290px] sm:min-h-[350px] flex items-end p-5 sm:p-10 bg-[#11131e]">
         <div id="heroBg" class="absolute inset-0 bg-cover bg-center opacity-45 transition-all duration-700"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-[#0b0c10] via-[#0b0c10]/70 to-transparent"></div>
-        <div class="absolute inset-0 bg-gradient-to-r from-[#0b0c10] via-[#0b0c10]/75 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-[#090a10] via-[#090a10]/70 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-[#090a10] via-[#090a10]/75 to-transparent"></div>
 
-        <!-- Top Right Slider Pagination Controls (< 1/5 >) -->
-        <div class="absolute top-4 right-4 z-20 flex items-center gap-2 bg-black/65 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-200">
+        <div class="absolute top-4 right-4 z-20 flex items-center gap-2 bg-black/70 backdrop-blur-md border border-purple-500/30 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-200">
           <button onclick="app.prevHeroSlide()" class="hover:text-sky-400 px-1">‹</button>
-          <span id="heroSlideCounter" class="font-mono text-sky-400">1 / 5</span>
-          <button onclick="app.nextHeroSlide()" class="hover:text-sky-400 px-1">›</button>
+          <span id="heroSlideCounter" class="font-mono brand-text-mix font-black">1 / 5</span>
+          <button onclick="app.nextHeroSlide()" class="hover:text-pink-400 px-1">›</button>
         </div>
 
         <div class="relative z-10 max-w-2xl space-y-3">
-          <div id="heroRankBadge" class="inline-flex items-center gap-1.5 text-sky-400 text-xs font-extrabold tracking-wide">
+          <div id="heroRankBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/20 border border-purple-400/30 text-sky-300 text-xs font-extrabold tracking-wide">
             <span>#1 Spotlight</span>
           </div>
           <h1 id="heroTitle" class="text-2xl sm:text-4xl font-black text-white leading-tight">Loading Spotlight...</h1>
           
-          <!-- Meta Chips (TV, Eps, Score, Duration) -->
           <div class="flex flex-wrap items-center gap-2 text-[11px] font-bold text-slate-300">
-            <span id="heroFormat" class="bg-white/10 px-2 py-0.5 rounded">TV</span>
-            <span id="heroEps" class="bg-white/10 px-2 py-0.5 rounded">12 Eps</span>
+            <span id="heroFormat" class="bg-sky-500/20 text-sky-300 border border-sky-500/30 px-2 py-0.5 rounded">TV</span>
+            <span id="heroEps" class="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded">12 Eps</span>
             <span id="heroScore" class="text-amber-400">★ 8.7</span>
-            <span class="text-slate-400">🕒 24 mins</span>
+            <span class="text-pink-300">🕒 24 mins</span>
           </div>
 
           <p id="heroDesc" class="text-xs sm:text-sm text-slate-300 line-clamp-2 leading-relaxed">Discover trending anime series with Sinhala soft-subtitles.</p>
           
           <div class="pt-2 flex items-center gap-3">
-            <button id="heroActionBtn" class="brand-accent text-white font-bold px-5 py-2.5 rounded-lg text-xs sm:text-sm shadow-lg shadow-sky-500/25 transition flex items-center gap-2">
-              <span>ⓘ</span> <span>DETAILS</span>
+            <button id="heroActionBtn" class="brand-accent text-white font-bold px-5 py-2.5 rounded-lg text-xs sm:text-sm shadow-lg shadow-purple-500/30 transition flex items-center gap-2">
+              <span>ⓘ</span> <span>DETAILS & EPISODES</span>
             </button>
             <button id="heroSubBadge" class="hidden bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold px-4 py-2.5 rounded-lg text-xs">
               🇱🇰 Sinhala Sub Available
@@ -253,45 +317,62 @@
         </div>
       </div>
 
-      <!-- HORIZONTAL GENRE BAR (Matching Screenshot 1) -->
+      <!-- HORIZONTAL GENRE BAR (Mixed Colors) -->
       <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-        <button onclick="app.filterByGenre('Action')" class="genre-pill shrink-0 bg-[#151822] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-300 hover:text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Action</button>
-        <button onclick="app.filterByGenre('Adventure')" class="genre-pill shrink-0 bg-[#151822] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-300 hover:text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Adventure</button>
-        <button onclick="app.filterByGenre('Comedy')" class="genre-pill shrink-0 bg-[#151822] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-300 hover:text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Comedy</button>
-        <button onclick="app.filterByGenre('Drama')" class="genre-pill shrink-0 bg-[#151822] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-300 hover:text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Drama</button>
-        <button onclick="app.filterByGenre('Fantasy')" class="genre-pill shrink-0 bg-[#151822] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-300 hover:text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Fantasy</button>
-        <button onclick="app.filterByGenre('Horror')" class="genre-pill shrink-0 bg-[#151822] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-300 hover:text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Horror</button>
-        <button onclick="app.filterByGenre('Isekai')" class="genre-pill shrink-0 bg-[#151822] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-300 hover:text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Isekai</button>
-        <button onclick="app.filterByGenre('Mecha')" class="genre-pill shrink-0 bg-[#151822] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-300 hover:text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Mecha</button>
-        <button onclick="app.filterByGenre('Mystery')" class="genre-pill shrink-0 bg-[#151822] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-300 hover:text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Mystery</button>
-        <button onclick="app.filterByGenre('Psychological')" class="genre-pill shrink-0 bg-[#151822] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-300 hover:text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Psychological</button>
-        <button onclick="app.filterByGenre('Romance')" class="genre-pill shrink-0 bg-[#151822] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-300 hover:text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Romance</button>
-        <button onclick="app.filterByGenre('Sci-Fi')" class="genre-pill shrink-0 bg-[#151822] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-300 hover:text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Sci-Fi</button>
-        <button onclick="app.filterByGenre('Slice of Life')" class="genre-pill shrink-0 bg-[#151822] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-300 hover:text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Slice of Life</button>
-        <button onclick="app.filterByGenre('Supernatural')" class="genre-pill shrink-0 bg-[#151822] hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-300 hover:text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Supernatural</button>
+        <button onclick="app.filterByGenre('Action')" class="shrink-0 bg-[#151826] hover:bg-sky-500/20 border border-sky-500/25 text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Action</button>
+        <button onclick="app.filterByGenre('Adventure')" class="shrink-0 bg-[#151826] hover:bg-purple-500/20 border border-purple-500/25 text-purple-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Adventure</button>
+        <button onclick="app.filterByGenre('Comedy')" class="shrink-0 bg-[#151826] hover:bg-amber-500/20 border border-amber-500/25 text-amber-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Comedy</button>
+        <button onclick="app.filterByGenre('Drama')" class="shrink-0 bg-[#151826] hover:bg-pink-500/20 border border-pink-500/25 text-pink-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Drama</button>
+        <button onclick="app.filterByGenre('Fantasy')" class="shrink-0 bg-[#151826] hover:bg-indigo-500/20 border border-indigo-500/25 text-indigo-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Fantasy</button>
+        <button onclick="app.filterByGenre('Horror')" class="shrink-0 bg-[#151826] hover:bg-rose-500/20 border border-rose-500/25 text-rose-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Horror</button>
+        <button onclick="app.filterByGenre('Isekai')" class="shrink-0 bg-[#151826] hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Isekai</button>
+        <button onclick="app.filterByGenre('Mecha')" class="shrink-0 bg-[#151826] hover:bg-cyan-500/20 border border-cyan-500/25 text-cyan-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Mecha</button>
+        <button onclick="app.filterByGenre('Mystery')" class="shrink-0 bg-[#151826] hover:bg-violet-500/20 border border-violet-500/25 text-violet-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Mystery</button>
+        <button onclick="app.filterByGenre('Psychological')" class="shrink-0 bg-[#151826] hover:bg-fuchsia-500/20 border border-fuchsia-500/25 text-fuchsia-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Psychological</button>
+        <button onclick="app.filterByGenre('Romance')" class="shrink-0 bg-[#151826] hover:bg-rose-500/20 border border-rose-500/25 text-rose-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Romance</button>
+        <button onclick="app.filterByGenre('Sci-Fi')" class="shrink-0 bg-[#151826] hover:bg-sky-500/20 border border-sky-500/25 text-sky-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Sci-Fi</button>
+        <button onclick="app.filterByGenre('Slice of Life')" class="shrink-0 bg-[#151826] hover:bg-teal-500/20 border border-teal-500/25 text-teal-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Slice of Life</button>
+        <button onclick="app.filterByGenre('Supernatural')" class="shrink-0 bg-[#151826] hover:bg-purple-500/20 border border-purple-500/25 text-purple-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Supernatural</button>
       </div>
 
-      <!-- WATCH HISTORY ROW -->
+      <!-- WATCH HISTORY ROW (Clicking opens Anime Episodes Window — NO Background Sound!) -->
       <section id="homeHistorySection" class="hidden space-y-3">
         <div class="flex items-center justify-between">
-          <h2 class="text-sm sm:text-base font-black uppercase tracking-wider text-white">WATCH HISTORY</h2>
-          <button onclick="app.openHistoryPage()" class="bg-white/5 hover:bg-white/10 text-slate-300 px-3 py-1 rounded-lg text-xs font-semibold transition">View Full History ›</button>
+          <h2 class="text-sm sm:text-base font-black uppercase tracking-wider text-white flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span>
+            <span>WATCH HISTORY</span>
+          </h2>
+          <button onclick="app.openHistoryPage()" class="bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-200 px-3 py-1 rounded-lg text-xs font-semibold transition">View Full History ›</button>
         </div>
         <div id="gridHomeHistory" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
       </section>
 
-      <!-- SITE STATS BAR (Matching Screenshot 2) -->
+      <!-- TOP VIEWERS XP LEADERBOARD -->
+      <section class="panel-dark rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs sm:text-sm font-black uppercase tracking-wider text-white flex items-center gap-2">
+            <span>🏆 TOP VIEWERS LEADERBOARD</span>
+            <span class="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded">XP Ranks</span>
+          </h2>
+          <span class="text-[11px] text-purple-300 hidden sm:inline">Watch episodes to earn XP & Level Up!</span>
+        </div>
+        <div id="leaderboardRow" class="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
+          <p class="text-xs text-slate-500 col-span-full text-center py-3">Loading community ranks...</p>
+        </div>
+      </section>
+
+      <!-- SITE STATS BAR (Multi-Color) -->
       <div class="panel-dark rounded-2xl p-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-        <div class="border-r border-white/5">
-          <div id="statSinhalaSeries" class="text-xl sm:text-2xl font-black text-white">0</div>
+        <div class="border-r border-white/10">
+          <div id="statSinhalaSeries" class="text-xl sm:text-2xl font-black text-sky-400">0</div>
           <div class="text-[11px] text-slate-400">Sinhala Subbed Series</div>
         </div>
-        <div class="md:border-r border-white/5">
-          <div id="statSinhalaEps" class="text-xl sm:text-2xl font-black text-sky-400">0</div>
+        <div class="md:border-r border-white/10">
+          <div id="statSinhalaEps" class="text-xl sm:text-2xl font-black text-purple-400">0</div>
           <div class="text-[11px] text-slate-400">සිංහල උපසිරැසි Episodes</div>
         </div>
-        <div class="border-r border-white/5">
-          <div class="text-xl sm:text-2xl font-black text-white">HD 1080p</div>
+        <div class="border-r border-white/10">
+          <div class="text-xl sm:text-2xl font-black text-pink-400">HD 1080p</div>
           <div class="text-[11px] text-slate-400">Streaming Quality</div>
         </div>
         <div>
@@ -300,7 +381,7 @@
         </div>
       </div>
 
-      <!-- TWO-COLUMN MAIN LAYOUT (Left 9 Cols: Grids & Schedule | Right 3 Cols: Top Rated & Airing Sidebar) -->
+      <!-- TWO-COLUMN MAIN LAYOUT -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         <!-- LEFT MAIN COLUMN (9 Cols) -->
@@ -310,59 +391,71 @@
           <section class="space-y-3">
             <div class="flex items-center justify-between">
               <h2 class="text-sm sm:text-base font-black uppercase tracking-wider text-white flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-sky-400 to-purple-500"></span>
                 <span>SINHALA SUBTITLED COLLECTIONS</span>
               </h2>
-              <span class="text-[11px] text-sky-400 font-bold">🇱🇰 සිංහල උපසිරැසි</span>
+              <span class="text-[11px] text-pink-400 font-bold">🇱🇰 සිංහල උපසිරැසි</span>
             </div>
-            <div id="gridSinhala" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div id="gridSinhala" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3.5">
               <p class="text-xs text-slate-400 col-span-full py-6 text-center">Loading Sinhala subbed collection...</p>
             </div>
           </section>
 
-          <!-- TRENDING / NEWEST ANIME -->
+          <!-- TRENDING ANIME -->
           <section class="space-y-3">
             <div class="flex items-center justify-between">
-              <h2 id="catalogTitle" class="text-sm sm:text-base font-black uppercase tracking-wider text-white">TRENDING ANIME</h2>
-              <button onclick="app.navFilter('trending')" class="bg-white/5 hover:bg-white/10 text-slate-300 px-3 py-1 rounded-lg text-xs font-semibold transition">View More ›</button>
+              <h2 id="catalogTitle" class="text-sm sm:text-base font-black uppercase tracking-wider text-white flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                <span>TRENDING ANIME</span>
+              </h2>
+              <button onclick="app.navFilter('trending')" class="bg-white/5 hover:bg-purple-500/20 text-slate-300 px-3 py-1 rounded-lg text-xs font-semibold transition">View More ›</button>
             </div>
-            <div id="gridCatalog" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div id="gridCatalog" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3.5">
               <p class="text-xs text-slate-400 col-span-full py-6 text-center">Connecting to Anime Database...</p>
             </div>
           </section>
 
-          <!-- ESTIMATED WEEKLY SCHEDULE (Matching Screenshot 3) -->
+          <!-- ESTIMATED WEEKLY SCHEDULE -->
           <section id="scheduleSection" class="panel-dark rounded-2xl p-5 space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <h2 class="text-sm sm:text-base font-black text-white">Estimated Schedule</h2>
-              <span id="liveClockDisplay" class="text-[11px] font-mono bg-white/5 px-2.5 py-1 rounded text-slate-400">GMT+05:30</span>
+              <span id="liveClockDisplay" class="text-[11px] font-mono bg-purple-500/15 border border-purple-500/30 px-2.5 py-1 rounded text-purple-300">GMT+05:30</span>
             </div>
 
-            <!-- 7 Day Tabs -->
             <div id="scheduleDayTabs" class="grid grid-cols-7 gap-1.5"></div>
 
-            <!-- Schedule List -->
             <div id="scheduleListContainer" class="divide-y divide-white/5">
               <p class="text-xs text-slate-400 py-4 text-center">Loading airing schedule...</p>
             </div>
           </section>
 
+          <!-- UPCOMING ANIME SECTION -->
+          <section class="space-y-3">
+            <div class="flex items-center justify-between">
+              <h2 class="text-sm sm:text-base font-black uppercase tracking-wider text-white flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                <span>UPCOMING ANIME</span>
+              </h2>
+              <button onclick="app.navFilter('upcoming')" class="bg-white/5 hover:bg-amber-500/20 text-slate-300 px-3 py-1 rounded-lg text-xs font-semibold transition">View More ›</button>
+            </div>
+            <div id="gridUpcoming" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3.5">
+              <p class="text-xs text-slate-400 col-span-full py-6 text-center">Loading upcoming releases...</p>
+            </div>
+          </section>
+
         </div>
 
-        <!-- RIGHT SIDEBAR (3 Cols — Matching Screenshot 2 & 3 Right Column) -->
+        <!-- RIGHT SIDEBAR (3 Cols) -->
         <aside class="lg:col-span-3 space-y-6">
-          
-          <!-- TOP RATED SIDEBAR -->
           <div class="panel-dark rounded-2xl p-4 space-y-3">
             <h3 class="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
-              <span class="text-sky-400">›</span> TOP RATED
+              <span class="text-pink-400">›</span> TOP RATED
             </h3>
             <div id="sidebarTopRated" class="space-y-2.5">
               <p class="text-xs text-slate-500">Loading top rated...</p>
             </div>
           </div>
 
-          <!-- POPULAR / JUST FINISHED SIDEBAR -->
           <div class="panel-dark rounded-2xl p-4 space-y-3">
             <h3 class="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
               <span class="text-sky-400">›</span> POPULAR AIRING
@@ -371,7 +464,6 @@
               <p class="text-xs text-slate-500">Loading popular...</p>
             </div>
           </div>
-
         </aside>
       </div>
     </div>
@@ -383,7 +475,7 @@
           <div class="text-xs text-slate-400 flex items-center gap-2 mb-1">
             <span onclick="app.goHome()" class="cursor-pointer hover:text-sky-400 transition">Home</span> › <span class="text-slate-200">Watch History</span>
           </div>
-          <h2 class="text-xl font-black text-white flex items-center gap-2">🕒 My Watch History</h2>
+          <h2 class="text-xl font-black text-white flex items-center gap-2">🕒 My Watch History <span class="text-xs font-normal text-purple-300">(Click any anime to open its Episodes window)</span></h2>
         </div>
         <div class="flex items-center gap-2">
           <button onclick="app.clearAllHistory()" class="bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 px-3.5 py-2 rounded-lg text-xs font-bold transition">
@@ -400,10 +492,10 @@
       </div>
     </div>
 
-    <!-- ANIME DETAILS PAGE -->
+    <!-- ANIME DETAILS & EPISODE COLLECTION WINDOW -->
     <div id="viewDetails" class="hidden space-y-6">
       <div class="flex items-center justify-between gap-4">
-        <button onclick="app.goHome()" class="bg-white/5 hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-200 hover:text-sky-300 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+        <button onclick="app.goHome()" class="bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/40 text-slate-200 hover:text-purple-200 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
           <span>←</span> <span>Back to Home</span>
         </button>
         <div class="text-xs text-slate-400 hidden sm:flex items-center gap-2">
@@ -412,29 +504,29 @@
       </div>
 
       <div class="panel-dark rounded-2xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-4 gap-8 relative overflow-hidden shadow-2xl">
-        <div class="absolute inset-0 bg-cover bg-center opacity-15 filter blur-2xl pointer-events-none" id="detBg"></div>
+        <div class="absolute inset-0 bg-cover bg-center opacity-20 filter blur-2xl pointer-events-none" id="detBg"></div>
         
-        <div class="aspect-[3/4] rounded-xl overflow-hidden bg-slate-900 border border-white/15 shadow-2xl relative z-10">
+        <div class="aspect-[3/4] rounded-xl overflow-hidden bg-slate-900 border border-purple-500/30 shadow-2xl relative z-10">
           <img id="detPoster" src="" class="w-full h-full object-cover" />
         </div>
 
         <div class="md:col-span-3 space-y-4 relative z-10 flex flex-col justify-center">
           <div>
             <h1 id="detTitle" class="text-2xl sm:text-4xl font-black text-white">Title</h1>
-            <p id="detSubTitle" class="text-xs text-sky-400/80 mt-1">Alternative: —</p>
+            <p id="detSubTitle" class="text-xs text-purple-300 mt-1">Alternative: —</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-2 text-xs text-slate-200">
             <span id="detType" class="bg-sky-500/20 border border-sky-500/30 text-sky-300 px-3 py-1 rounded-md font-semibold">TV</span>
-            <span id="detYear" class="bg-white/10 px-3 py-1 rounded-md">2026</span>
-            <span id="detEps" class="bg-white/10 px-3 py-1 rounded-md">12 Eps</span>
+            <span id="detYear" class="bg-purple-500/20 border border-purple-500/30 text-purple-300 px-3 py-1 rounded-md">2026</span>
+            <span id="detEps" class="bg-pink-500/20 border border-pink-500/30 text-pink-300 px-3 py-1 rounded-md">12 Eps</span>
             <span id="detScore" class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-md font-bold">★ 8.5</span>
           </div>
 
           <p id="detDesc" class="text-sm text-slate-300 leading-relaxed max-w-4xl"></p>
 
           <div class="flex flex-wrap items-center gap-3 pt-2">
-            <button id="watchNowBtn" onclick="app.startWatchSession()" class="hidden brand-accent text-white font-bold px-6 py-2.5 rounded-lg text-sm flex items-center gap-2 shadow-lg shadow-sky-500/25 transition">
+            <button id="watchNowBtn" onclick="app.startWatchSession()" class="hidden brand-accent text-white font-bold px-6 py-2.5 rounded-lg text-sm flex items-center gap-2 shadow-lg shadow-purple-500/30 transition">
               ▶ Watch Episode 1
             </button>
             <button id="reqBtn" onclick="app.requestSub()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-2.5 rounded-lg text-sm flex items-center gap-2 transition shadow-lg">
@@ -454,11 +546,11 @@
       </div>
     </div>
 
-    <!-- WATCH PLAYER PAGE (Iframe + Sinhala Sub Sync + Ad-Shield) -->
+    <!-- WATCH PLAYER PAGE -->
     <div id="viewWatch" class="hidden space-y-5">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-2">
-          <button onclick="app.openDetails()" class="bg-white/5 hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-slate-200 hover:text-sky-300 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+          <button onclick="app.openDetails()" class="bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/40 text-slate-200 hover:text-purple-200 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
             <span>←</span> <span>Back to Anime</span>
           </button>
           <button onclick="app.goHome()" class="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white px-3.5 py-2 rounded-lg text-xs font-semibold transition">
@@ -477,22 +569,21 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-4">
-          <div id="playerContainer" class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/15 shadow-2xl">
+          <div id="playerContainer" class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-purple-500/30 shadow-2xl">
             <div class="pointer-events-none absolute top-3 left-3 z-20 flex items-center gap-1.5 bg-black/70 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-md opacity-85">
-              <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+              <span class="w-2 h-2 rounded-full bg-pink-500"></span>
               <span class="text-[10px] font-black tracking-wider text-white">MY J ANIME</span>
             </div>
 
             <video id="nativeVideo" class="w-full h-full object-contain bg-black hidden" controls playsinline preload="metadata"></video>
-            <iframe id="mainPlayer" class="w-full h-full border-0" allowfullscreen allow="autoplay; encrypted-media; fullscreen"></iframe>
+            <div id="iframeMountSlot" class="w-full h-full"></div>
             
             <div id="captionOverlay" class="pointer-events-none absolute bottom-12 left-0 right-0 px-4 text-center z-30 transition-opacity">
               <span id="captionText" class="sinhala-caption text-base sm:text-xl font-bold text-white hidden"></span>
             </div>
           </div>
 
-          <!-- Iframe Sinhala Subtitle Sync Bar -->
-          <div id="iframeSyncBar" class="hidden panel-dark rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs border border-sky-500/30">
+          <div id="iframeSyncBar" class="hidden panel-dark rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs border border-purple-500/35">
             <div class="flex items-center gap-2">
               <button id="subTimerBtn" onclick="app.toggleIframeTimer()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-lg transition">
                 ▶ Start Sinhala Sub Sync
@@ -503,9 +594,8 @@
             <div class="text-[11px] text-emerald-300 font-medium">✓ Sinhala Subtitle Ready — Press Start when video begins</div>
           </div>
 
-          <!-- Player Controls & Ad-Shield -->
           <div class="panel-dark rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div class="flex items-center gap-2 font-bold text-sky-400 text-sm" id="watchEpHeading">Episode 1</div>
+            <div class="flex items-center gap-2 font-bold brand-text-mix text-sm" id="watchEpHeading">Episode 1</div>
             <div class="flex flex-wrap items-center gap-2">
               <button id="adShieldBtn" onclick="app.toggleAdShield()" title="Blocks pop-ups & redirects inside iframe" class="bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold px-3 py-1.5 rounded-lg transition">
                 🛡 Ad-Shield: OFF
@@ -522,7 +612,7 @@
                 <span id="offsetDisplay" class="font-mono text-amber-300 px-1">0.0s</span>
                 <button onclick="app.adjustOffset(0.5)" class="hover:text-sky-400 px-1 font-bold">+0.5s</button>
               </div>
-              <label class="cursor-pointer bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/40 text-sky-300 font-semibold px-3 py-1.5 rounded-lg transition">
+              <label class="cursor-pointer bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-200 font-semibold px-3 py-1.5 rounded-lg transition">
                 📂 Load .SRT/.ASS
                 <input type="file" accept=".srt,.ass" onchange="app.loadLocalFile(event)" class="hidden" />
               </label>
@@ -530,7 +620,6 @@
           </div>
         </div>
 
-        <!-- Episode Selector List -->
         <div class="space-y-4">
           <div class="panel-dark rounded-2xl p-4 space-y-3 shadow-lg">
             <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
@@ -554,7 +643,6 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Left Column: Single & Bulk Season Publisher -->
         <div class="panel-dark rounded-2xl p-6 space-y-4 shadow-xl h-fit">
           <div class="flex items-center gap-2 bg-[#0b0c10] p-1 rounded-xl border border-white/10">
             <button id="tabSingleBtn" onclick="app.switchStudioTab('single')" class="flex-1 py-2 rounded-lg text-xs font-bold brand-accent text-white transition">
@@ -568,7 +656,7 @@
           <div>
             <label class="block text-xs font-semibold text-slate-400 mb-1">Step 1: Search Anime Series</label>
             <div class="flex gap-2">
-              <input id="studioQuery" type="text" autocomplete="off" onkeydown="if(event.key==='Enter') app.studioSearch()" placeholder="Type anime name..." class="w-full bg-[#0b0c10] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-sky-500" />
+              <input id="studioQuery" type="text" autocomplete="off" onkeydown="if(event.key==='Enter') app.studioSearch()" placeholder="Type anime name..." class="w-full bg-[#0b0c10] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500" />
               <button onclick="app.studioSearch()" class="brand-accent font-bold px-5 py-2.5 rounded-lg text-xs transition">Search</button>
             </div>
             <div id="studioResults" class="mt-2 space-y-1.5 max-h-40 overflow-y-auto pr-1"></div>
@@ -582,7 +670,6 @@
             <input id="pubTitle" type="text" readonly placeholder="Select an anime above or from Requests..." class="w-full bg-[#0b0c10]/60 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-sky-400 font-bold cursor-not-allowed" />
           </div>
 
-          <!-- SINGLE EPISODE PANEL -->
           <div id="panelSinglePublish" class="space-y-4">
             <div class="grid grid-cols-2 gap-4">
               <div>
@@ -605,7 +692,6 @@
             </button>
           </div>
 
-          <!-- BULK SEASON PANEL -->
           <div id="panelBulkPublish" class="hidden space-y-4">
             <div class="grid grid-cols-2 gap-3">
               <div>
@@ -616,7 +702,7 @@
                 <label class="block text-xs font-semibold text-slate-400 mb-1">Total Episodes in Season</label>
                 <div class="flex gap-2">
                   <input id="bulkTotalEps" type="number" value="12" min="1" max="100" class="w-full bg-[#0b0c10] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
-                  <button onclick="app.generateBulkRows()" class="bg-sky-600 hover:bg-sky-500 px-3 py-2 rounded-lg text-xs font-bold">Set</button>
+                  <button onclick="app.generateBulkRows()" class="bg-purple-600 hover:bg-purple-500 px-3 py-2 rounded-lg text-xs font-bold">Set</button>
                 </div>
               </div>
             </div>
@@ -626,7 +712,7 @@
                 <span class="text-[11px] font-bold text-sky-400">⚡ Quick Paste All Season Iframe Links (1 Link per line)</span>
                 <button onclick="app.fillBulkFromTextarea()" class="brand-accent text-white px-2.5 py-1 rounded-md text-[10px] font-bold">Auto-Fill Rows ↓</button>
               </div>
-              <textarea id="bulkPasteBox" rows="3" placeholder="Paste Episode 1 iframe link on line 1&#10;Episode 2 iframe link on line 2&#10;Episode 3 iframe link on line 3..." class="w-full bg-[#151822] border border-white/10 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500"></textarea>
+              <textarea id="bulkPasteBox" rows="3" placeholder="Paste Episode 1 iframe link on line 1&#10;Episode 2 iframe link on line 2&#10;Episode 3 iframe link on line 3..." class="w-full bg-[#151822] border border-white/10 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500"></textarea>
             </div>
 
             <div id="bulkRowsContainer" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
@@ -637,7 +723,6 @@
           </div>
         </div>
 
-        <!-- Right Column: Viewer Requests & Manage/Add Subtitles Later/Delete Published Anime -->
         <div class="space-y-6">
           <div class="panel-dark rounded-2xl p-6 space-y-4 shadow-xl">
             <div class="flex items-center justify-between">
@@ -668,17 +753,17 @@
 
   <input type="file" id="laterSubFileInput" accept=".srt,.ass" class="hidden" onchange="app.handleLaterSubUpload(event)" />
 
-  <footer class="border-t border-white/10 bg-[#08090d] py-6 mt-12 text-center text-xs text-slate-500">
-    <p>© 2026 MY J ANIME. Sinhala Anime Streaming Community.</p>
+  <footer class="border-t border-purple-500/20 bg-[#08090f] py-6 mt-12 text-center text-xs text-slate-500">
+    <p>© 2026 <span class="brand-text-mix font-bold">MY J ANIME</span>. Sinhala Anime Streaming Community.</p>
   </footer>
 
   <!-- USER SIGN IN / SIGN UP POPUP MODAL -->
   <div id="modalUserAuth" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="panel-dark rounded-2xl p-6 sm:p-8 max-w-sm w-full space-y-5 shadow-2xl border border-sky-500/25 relative overflow-hidden">
+    <div class="panel-dark rounded-2xl p-6 sm:p-8 max-w-sm w-full space-y-5 shadow-2xl border border-purple-500/30 relative overflow-hidden">
       <div class="flex items-center justify-between relative z-10">
         <div>
           <h3 id="authModalTitle" class="text-xl font-black text-white anime-font">Welcome Back! ✨</h3>
-          <p class="text-xs text-slate-400 mt-0.5">Sign in to save your Watch History & request subtitles</p>
+          <p class="text-xs text-slate-400 mt-0.5">Sign in to earn XP, climb Leaderboard & save Watch History</p>
         </div>
         <button onclick="app.closeUserModal()" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/15 flex items-center justify-center text-slate-400 hover:text-white transition">✕</button>
       </div>
@@ -700,8 +785,8 @@
       </div>
 
       <div class="space-y-3 relative z-10">
-        <input id="userEmailInput" type="email" placeholder="Email address" class="w-full bg-[#0b0c10] border border-white/10 rounded-lg px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-sky-500" />
-        <input id="userPassInput" type="password" placeholder="Password (min 6 characters)" class="w-full bg-[#0b0c10] border border-white/10 rounded-lg px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-sky-500" />
+        <input id="userEmailInput" type="email" placeholder="Email address" class="w-full bg-[#0b0c10] border border-white/10 rounded-lg px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-purple-500" />
+        <input id="userPassInput" type="password" placeholder="Password (min 6 characters)" class="w-full bg-[#0b0c10] border border-white/10 rounded-lg px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-purple-500" />
         
         <div class="grid grid-cols-2 gap-2 pt-1">
           <button onclick="app.loginWithEmail()" class="brand-accent text-white font-bold py-2.5 rounded-lg text-xs shadow transition">
@@ -741,7 +826,7 @@
       onAuthStateChanged, 
       signOut 
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, updateDoc, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, getDocs, addDoc, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const fbCfg = {
       apiKey: "AIzaSyDiCIxkg8RP0lfJgafuP0f4ZkFZ0jy5UmE",
@@ -800,7 +885,222 @@
         this.startLiveClock();
       }
 
-      // SIDEBAR DRAWER CONTROLS
+      stopAllMedia() {
+        this.resetIframeTimer();
+        const mountSlot = document.getElementById('iframeMountSlot');
+        if (mountSlot) {
+          mountSlot.innerHTML = '';
+        }
+        if (this.hls) {
+          this.hls.destroy();
+          this.hls = null;
+        }
+        const vid = document.getElementById('nativeVideo');
+        if (vid) {
+          vid.pause();
+          vid.removeAttribute('src');
+          vid.load();
+        }
+      }
+
+      toggleAdvancedFilter(forceState = null) {
+        const panel = document.getElementById('advancedFilterPanel');
+        if (forceState === true) panel.classList.remove('hidden');
+        else if (forceState === false) panel.classList.add('hidden');
+        else panel.classList.toggle('hidden');
+      }
+
+      resetAdvancedFilter() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('clearSearchBtn').classList.add('hidden');
+        document.getElementById('fltSeason').value = '';
+        document.getElementById('fltSource').value = '';
+        document.getElementById('fltCountry').value = '';
+        document.getElementById('fltFormat').value = '';
+        document.getElementById('fltSort').value = 'POPULARITY_DESC';
+        document.getElementById('searchResultsSection').classList.add('hidden');
+      }
+
+      async applyAdvancedSearch() {
+        this.goHome();
+        const keyword = document.getElementById('searchInput').value.trim();
+        const season = document.getElementById('fltSeason').value;
+        const source = document.getElementById('fltSource').value;
+        const country = document.getElementById('fltCountry').value;
+        const format = document.getElementById('fltFormat').value;
+        const sort = document.getElementById('fltSort').value || 'POPULARITY_DESC';
+
+        const sec = document.getElementById('searchResultsSection');
+        const titleEl = document.getElementById('searchResultsTitle');
+        const container = document.getElementById('gridSearchResults');
+
+        sec.classList.remove('hidden');
+
+        if (format === 'SINHALA_ONLY') {
+          let cols = Object.values(this.animeCollections);
+          if (keyword) {
+            cols = cols.filter(c => c.title.english.toLowerCase().includes(keyword.toLowerCase()));
+          }
+          titleEl.innerHTML = `🇱🇰 Sinhala Subbed Results (${cols.length})`;
+          this.renderCards(cols, container, true);
+          return;
+        }
+
+        titleEl.innerHTML = `🔍 Filtered Anime Catalog ${keyword ? `— "<span class="text-sky-400">${keyword}</span>"` : ''}`;
+        container.innerHTML = `<p class="text-sm text-purple-300 col-span-full py-8 text-center animate-pulse">Searching & filtering anime catalog...</p>`;
+
+        try {
+          let argDefs = ['$sort: [MediaSort]'];
+          let filterArgs = ['type: ANIME', 'sort: $sort', 'isAdult: false'];
+          let variables = { sort: [sort] };
+
+          if (keyword) {
+            argDefs.push('$search: String');
+            filterArgs.push('search: $search');
+            variables.search = keyword;
+          }
+          if (season) {
+            argDefs.push('$season: MediaSeason');
+            filterArgs.push('season: $season');
+            variables.season = season;
+          }
+          if (source) {
+            argDefs.push('$source: MediaSource');
+            filterArgs.push('source: $source');
+            variables.source = source;
+          }
+          if (country) {
+            argDefs.push('$country: CountryCode');
+            filterArgs.push('countryOfOrigin: $country');
+            variables.country = country;
+          }
+          if (format) {
+            argDefs.push('$format: MediaFormat');
+            filterArgs.push('format: $format');
+            variables.format = format;
+          }
+
+          const query = `query (${argDefs.join(', ')}) {
+            Page(page: 1, perPage: 24) {
+              media(${filterArgs.join(', ')}) {
+                id title { romaji english } bannerImage coverImage { extraLarge large } episodes seasonYear format averageScore description
+              }
+            }
+          }`;
+
+          const res = await fetch('https://graphql.anilist.co', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, variables })
+          });
+          const json = await res.json();
+          const list = json?.data?.Page?.media || [];
+          this.renderCards(list, container);
+        } catch (e) {
+          const fallback = await this.fetchAnimeList(keyword);
+          this.renderCards(fallback, container);
+        }
+      }
+
+      getRankTitle(xp) {
+        if (xp >= 5000) return { title: 'Hokage', lv: Math.floor(xp / 500) + 1 };
+        if (xp >= 2500) return { title: 'Hashira', lv: Math.floor(xp / 500) + 1 };
+        if (xp >= 1000) return { title: 'Jonin', lv: Math.floor(xp / 500) + 1 };
+        if (xp >= 300) return { title: 'Chunin', lv: Math.floor(xp / 250) + 1 };
+        return { title: 'Anime Genin', lv: Math.floor(xp / 100) + 1 };
+      }
+
+      async awardUserXP(user, points = 50) {
+        if (!user || user.isAnonymous || !database) return;
+        const displayName = user.displayName || user.email.split('@')[0];
+        const avatar = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=8b5cf6&color=fff`;
+        const ref = doc(database, "user_leaderboard", user.uid);
+        try {
+          const snap = await getDoc(ref);
+          if (snap.exists()) {
+            await updateDoc(ref, {
+              name: displayName,
+              avatar,
+              xp: increment(points),
+              updatedAt: Date.now()
+            });
+          } else {
+            await setDoc(ref, {
+              uid: user.uid,
+              name: displayName,
+              avatar,
+              xp: 100 + points,
+              updatedAt: Date.now()
+            });
+          }
+          await this.loadLeaderboard();
+        } catch (e) {}
+      }
+
+      async loadLeaderboard() {
+        const container = document.getElementById('leaderboardRow');
+        if (!container) return;
+
+        let members = [];
+        if (database) {
+          try {
+            const snap = await getDocs(collection(database, "user_leaderboard"));
+            snap.forEach(d => members.push(d.data()));
+          } catch (e) {}
+        }
+
+        const fallbackMembers = [
+          { name: 'MY J ANIME', xp: 4850, avatar: 'https://ui-avatars.com/api/?name=J&background=06b6d4&color=fff' },
+          { name: 'ShadowMonarch', xp: 3420, avatar: 'https://ui-avatars.com/api/?name=S&background=8b5cf6&color=fff' },
+          { name: 'Kirito_SL', xp: 2910, avatar: 'https://ui-avatars.com/api/?name=K&background=ec4899&color=fff' },
+          { name: 'RimuruTempest', xp: 2450, avatar: 'https://ui-avatars.com/api/?name=R&background=10b981&color=fff' },
+          { name: 'GojoSatoru', xp: 1980, avatar: 'https://ui-avatars.com/api/?name=G&background=3b82f6&color=fff' },
+          { name: 'Asta_Knight', xp: 1640, avatar: 'https://ui-avatars.com/api/?name=A&background=f59e0b&color=fff' },
+          { name: 'LeviAckerman', xp: 1320, avatar: 'https://ui-avatars.com/api/?name=L&background=6366f1&color=fff' },
+          { name: 'ZoroRoronoa', xp: 1100, avatar: 'https://ui-avatars.com/api/?name=Z&background=14b8a6&color=fff' },
+          { name: 'Tanjiro_SL', xp: 850, avatar: 'https://ui-avatars.com/api/?name=T&background=f43f5e&color=fff' },
+          { name: 'ErenYeager', xp: 620, avatar: 'https://ui-avatars.com/api/?name=E&background=64748b&color=fff' }
+        ];
+
+        for (const fb of fallbackMembers) {
+          if (members.length >= 10) break;
+          if (!members.some(m => m.name === fb.name)) {
+            members.push(fb);
+          }
+        }
+
+        members.sort((a, b) => (b.xp || 0) - (a.xp || 0));
+        const top10 = members.slice(0, 10);
+
+        container.innerHTML = top10.map((m, idx) => {
+          const rank = idx + 1;
+          const info = this.getRankTitle(m.xp || 100);
+          let badgeColor = 'bg-slate-700 text-slate-200';
+          let ringColor = 'border-white/15';
+          let crown = '';
+          if (rank === 1) { badgeColor = 'bg-amber-400 text-slate-950'; ringColor = 'border-amber-400 shadow-lg shadow-amber-400/20'; crown = '👑 '; }
+          else if (rank === 2) { badgeColor = 'bg-slate-300 text-slate-950'; ringColor = 'border-slate-300'; }
+          else if (rank === 3) { badgeColor = 'bg-pink-500 text-white'; ringColor = 'border-pink-500'; }
+
+          return `
+            <div class="bg-[#161926] hover:bg-purple-500/10 border border-white/5 rounded-xl p-2.5 flex flex-col items-center text-center transition">
+              <div class="relative mb-2">
+                <img src="${m.avatar}" class="w-11 h-11 rounded-xl object-cover border-2 ${ringColor}" />
+                <span class="absolute -top-2 -right-2 ${badgeColor} text-[9px] font-black px-1.5 py-0.5 rounded-md shadow">
+                  ${crown}#${rank}
+                </span>
+                <span class="absolute -bottom-1.5 inset-x-1 brand-accent text-white text-[8px] font-black rounded px-1">
+                  LV.${info.lv}
+                </span>
+              </div>
+              <div class="w-full truncate text-[11px] font-bold text-slate-100 mt-1">${m.name}</div>
+              <div class="text-[9px] text-purple-300 font-semibold truncate">✦ ${info.title}</div>
+              <div class="text-[9px] text-amber-400 font-mono font-bold mt-0.5">★ ${(m.xp || 100).toLocaleString()} XP</div>
+            </div>
+          `;
+        }).join('');
+      }
+
       openSideDrawer() {
         document.getElementById('sideDrawerOverlay').classList.remove('hidden');
         document.getElementById('sideDrawer').classList.remove('-translate-x-full');
@@ -825,7 +1125,7 @@
         });
         const activeBtn = document.getElementById(`sideBtn_${type}`);
         if (activeBtn) {
-          activeBtn.className = 'side-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-sky-500/15 text-sky-400 font-bold transition';
+          activeBtn.className = 'side-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-sky-500/20 via-purple-500/20 to-pink-500/20 text-sky-300 border border-purple-500/30 font-bold transition';
         }
 
         if (type === 'home') {
@@ -865,14 +1165,13 @@
         const titleEl = document.getElementById('searchResultsTitle');
         const container = document.getElementById('gridSearchResults');
         sec.classList.remove('hidden');
-        titleEl.innerHTML = `🏷 Genre: <span class="text-sky-400">${genre}</span>`;
+        titleEl.innerHTML = `🏷 Genre: <span class="brand-text-mix">${genre}</span>`;
         container.innerHTML = `<p class="text-xs text-slate-400 col-span-full py-6 text-center animate-pulse">Fetching ${genre} anime...</p>`;
 
         const list = await this.fetchFilteredAnime('genre', genre);
         this.renderCards(list, container);
       }
 
-      // LIVE CLOCK & WEEKLY SCHEDULE TABS
       startLiveClock() {
         const el = document.getElementById('liveClockDisplay');
         if (!el) return;
@@ -897,9 +1196,9 @@
           const dateLabel = `${months[d.getMonth()]} ${d.getDate()}`;
           const isToday = i === 0;
           html += `
-            <button onclick="app.loadDaySchedule('${dayName.toLowerCase()}', this)" class="sched-tab py-2 px-1 rounded-xl text-center transition ${isToday ? 'bg-white text-slate-950 font-black shadow' : 'bg-[#181b26] text-slate-400 hover:bg-white/10 hover:text-white'}">
+            <button onclick="app.loadDaySchedule('${dayName.toLowerCase()}', this)" class="sched-tab py-2 px-1 rounded-xl text-center transition ${isToday ? 'brand-accent text-white font-black shadow-lg' : 'bg-[#181b28] text-slate-400 hover:bg-white/10 hover:text-white'}">
               <div class="text-xs font-extrabold">${dayName}</div>
-              <div class="text-[10px] opacity-80">${dateLabel}</div>
+              <div class="text-[10px] opacity-85">${dateLabel}</div>
             </button>
           `;
         }
@@ -910,9 +1209,9 @@
       async loadDaySchedule(dayFull, btnEl = null) {
         if (btnEl) {
           document.querySelectorAll('.sched-tab').forEach(b => {
-            b.className = 'sched-tab py-2 px-1 rounded-xl text-center transition bg-[#181b26] text-slate-400 hover:bg-white/10 hover:text-white';
+            b.className = 'sched-tab py-2 px-1 rounded-xl text-center transition bg-[#181b28] text-slate-400 hover:bg-white/10 hover:text-white';
           });
-          btnEl.className = 'sched-tab py-2 px-1 rounded-xl text-center transition bg-white text-slate-950 font-black shadow';
+          btnEl.className = 'sched-tab py-2 px-1 rounded-xl text-center transition brand-accent text-white font-black shadow-lg';
         }
 
         const dayMap = { sun: 'sunday', mon: 'monday', tue: 'tuesday', wed: 'wednesday', thu: 'thursday', fri: 'friday', sat: 'saturday' };
@@ -940,12 +1239,12 @@
               };
               const encoded = encodeURIComponent(JSON.stringify(animeObj));
               return `
-                <div onclick="app.selectAnime('${encoded}')" class="cursor-pointer py-2.5 px-2 hover:bg-white/5 rounded-lg flex items-center justify-between gap-3 transition">
+                <div onclick="app.selectAnime('${encoded}')" class="cursor-pointer py-2.5 px-2 hover:bg-purple-500/10 rounded-lg flex items-center justify-between gap-3 transition">
                   <div class="flex items-center gap-3 min-w-0">
-                    <span class="text-xs font-mono text-slate-500 shrink-0">${timeStr}</span>
-                    <span class="text-xs font-bold text-slate-200 truncate hover:text-sky-400">${title}</span>
+                    <span class="text-xs font-mono text-sky-400 shrink-0">${timeStr}</span>
+                    <span class="text-xs font-bold text-slate-200 truncate hover:text-pink-300">${title}</span>
                   </div>
-                  <span class="text-[11px] text-slate-400 font-semibold shrink-0">▸ ${epStr}</span>
+                  <span class="text-[11px] text-purple-300 font-semibold shrink-0">▸ ${epStr}</span>
                 </div>
               `;
             }).join('');
@@ -954,23 +1253,6 @@
           }
         } catch (e) {
           listEl.innerHTML = `<p class="text-xs text-slate-500 py-4 text-center">Schedule unavailable offline.</p>`;
-        }
-      }
-
-      // STOP ALL MEDIA ON PAGE EXIT
-      stopAllMedia() {
-        this.resetIframeTimer();
-        const iframe = document.getElementById('mainPlayer');
-        if (iframe) iframe.src = 'about:blank';
-        if (this.hls) {
-          this.hls.destroy();
-          this.hls = null;
-        }
-        const vid = document.getElementById('nativeVideo');
-        if (vid) {
-          vid.pause();
-          vid.removeAttribute('src');
-          vid.load();
         }
       }
 
@@ -996,9 +1278,9 @@
             }
 
             const displayName = user.displayName || user.email.split('@')[0];
-            const avatar = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=0ea5e9&color=fff`;
+            const avatar = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=8b5cf6&color=fff`;
             navArea.innerHTML = `
-              <div class="flex items-center gap-2 bg-white/5 border border-white/10 pl-1.5 pr-2.5 py-1 rounded-lg">
+              <div class="flex items-center gap-2 bg-white/5 border border-purple-500/30 pl-1.5 pr-2.5 py-1 rounded-lg">
                 <img src="${avatar}" class="w-6 h-6 rounded-md object-cover" />
                 <span class="text-xs font-bold text-slate-200 max-w-[85px] truncate hidden sm:inline">${displayName}</span>
                 <button onclick="app.logoutUser()" title="Sign Out" class="text-[10px] text-rose-400 hover:text-rose-300 font-bold ml-1">Exit</button>
@@ -1011,6 +1293,7 @@
               </div>
               <button onclick="app.logoutUser()" class="text-[10px] font-bold text-rose-400 hover:underline shrink-0">Exit</button>
             `;
+            await this.awardUserXP(user, 10);
             await this.loadUserHistory();
           } else {
             this.currentUser = null;
@@ -1021,7 +1304,7 @@
             document.getElementById('homeHistorySection').classList.add('hidden');
             if (!user) signInAnonymously(auth).catch(() => {});
             navArea.innerHTML = `
-              <button onclick="app.openUserModal()" class="brand-accent text-white font-bold px-4 py-2 rounded-lg text-xs shadow transition flex items-center gap-1.5">
+              <button onclick="app.openUserModal()" class="brand-accent text-white font-bold px-3.5 sm:px-4 py-2 rounded-lg text-xs shadow transition flex items-center gap-1.5">
                 <span>👤</span> <span>Sign In</span>
               </button>
             `;
@@ -1047,6 +1330,7 @@
         };
         try {
           await setDoc(doc(database, "watch_history", docId), historyItem);
+          await this.awardUserXP(this.currentUser, 50);
           await this.loadUserHistory();
         } catch (e) {}
       }
@@ -1086,14 +1370,15 @@
           return `
             <div class="group relative anime-card rounded-xl overflow-hidden flex flex-col">
               <button onclick="event.stopPropagation(); app.removeHistoryItem('${item.docId}')" title="Remove" class="absolute top-2 right-2 z-20 w-6 h-6 rounded-md bg-black/80 hover:bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition">✕</button>
-              <div onclick="app.resumeFromHistory('${encoded}', ${item.lastEp})" class="cursor-pointer flex-1 flex flex-col">
+              <div onclick="app.openAnimeEpisodesFromHistory('${encoded}')" class="cursor-pointer flex-1 flex flex-col">
                 <div class="relative aspect-video bg-slate-900 overflow-hidden">
                   <img src="${item.posterUrl}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                  <div class="absolute inset-0 bg-gradient-to-t from-[#0b0c10] via-transparent to-transparent opacity-80"></div>
-                  <span class="absolute bottom-2 left-2 bg-sky-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded">Ep ${item.lastEp}</span>
+                  <div class="absolute inset-0 bg-gradient-to-t from-[#0b0c12] via-transparent to-transparent opacity-80"></div>
+                  <span class="absolute bottom-2 left-2 brand-accent text-white text-[10px] font-extrabold px-2 py-0.5 rounded shadow">Watched Ep ${item.lastEp}</span>
                 </div>
                 <div class="p-2.5">
-                  <h3 class="text-xs font-bold text-slate-100 truncate group-hover:text-sky-400 transition">${item.animeTitle}</h3>
+                  <h3 class="text-xs font-bold text-slate-100 truncate group-hover:text-pink-300 transition">${item.animeTitle}</h3>
+                  <p class="text-[10px] text-sky-400 mt-0.5">Click to view episodes list ›</p>
                 </div>
               </div>
             </div>
@@ -1104,14 +1389,10 @@
         fullGrid.innerHTML = buildCards(this.userHistory);
       }
 
-      resumeFromHistory(encodedAnime, epNum) {
+      openAnimeEpisodesFromHistory(encodedAnime) {
+        this.stopAllMedia();
         this.selectedAnime = JSON.parse(decodeURIComponent(encodedAnime));
-        const hasPublished = Boolean(this.animeCollections[String(this.selectedAnime.id)]);
-        if (hasPublished) {
-          this.startWatchSession(epNum);
-        } else {
-          this.openDetails();
-        }
+        this.openDetails();
       }
 
       async removeHistoryItem(docId) {
@@ -1245,18 +1526,24 @@
         this.adShieldOn = !this.adShieldOn;
         const btn = document.getElementById('adShieldBtn');
         const iframe = document.getElementById('mainPlayer');
-        const currentSrc = iframe.src;
 
         if (this.adShieldOn) {
           btn.textContent = '🛡 Ad-Shield: ON';
           btn.className = 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold px-3 py-1.5 rounded-lg transition';
-          iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+          if (iframe) {
+            const src = iframe.src;
+            iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+            iframe.src = src;
+          }
         } else {
           btn.textContent = '🛡 Ad-Shield: OFF';
           btn.className = 'bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold px-3 py-1.5 rounded-lg transition';
-          iframe.removeAttribute('sandbox');
+          if (iframe) {
+            const src = iframe.src;
+            iframe.removeAttribute('sandbox');
+            iframe.src = src;
+          }
         }
-        if (currentSrc && currentSrc !== 'about:blank') iframe.src = currentSrc;
       }
 
       toggleCC() {
@@ -1306,10 +1593,15 @@
         clearInterval(this.iframeInterval);
         this.iframeRunning = false;
         this.iframeTime = 0;
-        document.getElementById('timerDisplay').textContent = '00:00';
-        document.getElementById('subTimerBtn').textContent = '▶ Start Sinhala Sub Sync';
-        document.getElementById('subTimerBtn').className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-lg transition';
-        document.getElementById('captionText').classList.add('hidden');
+        const tDisp = document.getElementById('timerDisplay');
+        if (tDisp) tDisp.textContent = '00:00';
+        const sBtn = document.getElementById('subTimerBtn');
+        if (sBtn) {
+          sBtn.textContent = '▶ Start Sinhala Sub Sync';
+          sBtn.className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-lg transition';
+        }
+        const cap = document.getElementById('captionText');
+        if (cap) cap.classList.add('hidden');
       }
 
       loadLocalFile(event) {
@@ -1318,7 +1610,7 @@
         const reader = new FileReader();
         reader.onload = (e) => {
           this.activeSubs = this.parseSubtitles(e.target.result);
-          if (this.activeSubs.length > 0 && !document.getElementById('mainPlayer').classList.contains('hidden')) {
+          if (this.activeSubs.length > 0 && document.getElementById('mainPlayer')) {
             document.getElementById('iframeSyncBar').classList.remove('hidden');
           }
           alert(`Loaded ${this.activeSubs.length} Sinhala subtitle lines!`);
@@ -1329,8 +1621,8 @@
       async fetchAnimeList(searchTerm = '') {
         try {
           const query = searchTerm
-            ? `query ($s: String) { Page(page: 1, perPage: 20) { media(type: ANIME, search: $s, isAdult: false) { id title { romaji english } bannerImage coverImage { extraLarge large } episodes seasonYear format averageScore description } } }`
-            : `query { Page(page: 1, perPage: 20) { media(type: ANIME, sort: [TRENDING_DESC], isAdult: false) { id title { romaji english } bannerImage coverImage { extraLarge large } episodes seasonYear format averageScore description } } }`;
+            ? `query ($s: String) { Page(page: 1, perPage: 24) { media(type: ANIME, search: $s, isAdult: false) { id title { romaji english } bannerImage coverImage { extraLarge large } episodes seasonYear format averageScore description } } }`
+            : `query { Page(page: 1, perPage: 24) { media(type: ANIME, sort: [TRENDING_DESC], isAdult: false) { id title { romaji english } bannerImage coverImage { extraLarge large } episodes seasonYear format averageScore description } } }`;
           
           const res = await fetch('https://graphql.anilist.co', {
             method: 'POST',
@@ -1345,8 +1637,8 @@
 
         try {
           const url = searchTerm
-            ? `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(searchTerm)}&limit=20&sfw=true`
-            : `https://api.jikan.moe/v4/top/anime?filter=airing&limit=20`;
+            ? `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(searchTerm)}&limit=24&sfw=true`
+            : `https://api.jikan.moe/v4/top/anime?filter=airing&limit=24`;
           const res = await fetch(url);
           const json = await res.json();
           if (json?.data?.length) {
@@ -1383,7 +1675,7 @@
           if (mode === 'top_rated') sortStr = 'SCORE_DESC';
           if (mode === 'genre') { extraFilter = ', genre: $g'; vars = { g: param }; }
 
-          const query = `query ${mode === 'genre' ? '($g: String)' : ''} { Page(page: 1, perPage: 20) { media(type: ANIME, sort: [${sortStr}]${extraFilter}, isAdult: false) { id title { romaji english } bannerImage coverImage { extraLarge large } episodes seasonYear format averageScore description } } }`;
+          const query = `query ${mode === 'genre' ? '($g: String)' : ''} { Page(page: 1, perPage: 24) { media(type: ANIME, sort: [${sortStr}]${extraFilter}, isAdult: false) { id title { romaji english } bannerImage coverImage { extraLarge large } episodes seasonYear format averageScore description } } }`;
 
           const res = await fetch('https://graphql.anilist.co', {
             method: 'POST',
@@ -1393,18 +1685,44 @@
           const json = await res.json();
           if (json?.data?.Page?.media?.length) return json.data.Page.media;
         } catch (e) {}
+
+        if (mode === 'upcoming') {
+          try {
+            const res = await fetch('https://api.jikan.moe/v4/seasons/upcoming?limit=18&sfw=true');
+            const json = await res.json();
+            if (json?.data?.length) {
+              return json.data.map(item => ({
+                id: item.mal_id,
+                title: { english: item.title_english || item.title, romaji: item.title },
+                coverImage: { large: item.images?.jpg?.large_image_url || '' },
+                episodes: item.episodes,
+                seasonYear: item.year || '2027',
+                format: item.type || 'TV',
+                averageScore: item.score ? Math.round(item.score * 10) : 78,
+                description: item.synopsis || ''
+              }));
+            }
+          } catch (e) {}
+        }
         return [];
       }
 
       async initCatalog() {
+        await this.loadLeaderboard();
         await this.loadSubbedDB();
+
         const trendingList = await this.fetchAnimeList('');
         if (trendingList.length) {
           this.heroSlides = trendingList.slice(0, 5);
           this.renderHeroSlide(0);
           this.startHeroAutoSlider();
-          this.renderCards(trendingList.slice(0, 15), document.getElementById('gridCatalog'));
+          this.renderCards(trendingList.slice(0, 12), document.getElementById('gridCatalog'));
           this.renderSidebarList(trendingList.slice(0, 5), document.getElementById('sidebarPopular'));
+        }
+
+        const upcomingList = await this.fetchFilteredAnime('upcoming');
+        if (upcomingList.length) {
+          this.renderCards(upcomingList.slice(0, 12), document.getElementById('gridUpcoming'));
         }
 
         const topRated = await this.fetchFilteredAnime('top_rated');
@@ -1413,7 +1731,6 @@
         }
       }
 
-      // HERO SPOTLIGHT SLIDER
       renderHeroSlide(idx) {
         if (!this.heroSlides.length) return;
         this.heroIdx = (idx + this.heroSlides.length) % this.heroSlides.length;
@@ -1455,7 +1772,6 @@
         }, 6500);
       }
 
-      // RIGHT SIDEBAR COMPACT LIST (Matching ANISHIFT Right Sidebar)
       renderSidebarList(list, container) {
         if (!container || !list.length) return;
         container.innerHTML = list.map(item => {
@@ -1463,10 +1779,10 @@
           const encoded = encodeURIComponent(JSON.stringify(item));
           const hasSub = Boolean(this.animeCollections[String(item.id)]);
           return `
-            <div onclick="app.selectAnime('${encoded}')" class="cursor-pointer flex items-center gap-3 p-2 rounded-xl bg-[#161923] hover:bg-white/10 border border-white/5 transition group">
+            <div onclick="app.selectAnime('${encoded}')" class="cursor-pointer flex items-center gap-3 p-2 rounded-xl bg-[#161926] hover:bg-purple-500/15 border border-white/5 transition group">
               <img src="${item.coverImage.large}" loading="lazy" class="w-11 h-14 rounded-lg object-cover shrink-0 bg-slate-800" />
               <div class="min-w-0 flex-1 space-y-1">
-                <h4 class="text-xs font-bold text-slate-200 truncate group-hover:text-sky-400 transition flex items-center gap-1.5">
+                <h4 class="text-xs font-bold text-slate-200 truncate group-hover:text-pink-300 transition flex items-center gap-1.5">
                   <span class="w-1.5 h-1.5 rounded-full ${hasSub ? 'bg-emerald-400' : 'bg-sky-400'} shrink-0"></span>
                   <span class="truncate">${title}</span>
                 </h4>
@@ -1496,35 +1812,12 @@
 
         clearTimeout(this.searchDebounceTimer);
         this.searchDebounceTimer = setTimeout(() => {
-          if (term.length >= 2) this.searchAnime();
+          if (term.length >= 2) this.applyAdvancedSearch();
         }, 450);
       }
 
-      async searchAnime() {
-        const term = document.getElementById('searchInput').value.trim();
-        if (!term) return this.resetSearchAndGoHome();
-
-        this.goHome();
-        const sec = document.getElementById('searchResultsSection');
-        const titleEl = document.getElementById('searchResultsTitle');
-        const container = document.getElementById('gridSearchResults');
-
-        sec.classList.remove('hidden');
-        titleEl.innerHTML = `🔍 Search Results for "<span class="text-sky-400">${term}</span>"`;
-        container.innerHTML = `<p class="text-sm text-slate-400 col-span-full py-6 text-center animate-pulse">Searching global anime database for "${term}"...</p>`;
-
-        const results = await this.fetchAnimeList(term);
-        if (results.length > 0) {
-          this.renderCards(results, container);
-        } else {
-          container.innerHTML = `<p class="text-sm text-rose-400 col-span-full py-6 text-center">No anime found matching "${term}".</p>`;
-        }
-      }
-
       resetSearchAndGoHome() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('clearSearchBtn').classList.add('hidden');
-        document.getElementById('searchResultsSection').classList.add('hidden');
+        this.resetAdvancedFilter();
         this.goHome();
       }
 
@@ -1564,7 +1857,6 @@
             return col;
           });
 
-          // Update Stats Bar
           document.getElementById('statSinhalaSeries').textContent = collections.length;
           document.getElementById('statSinhalaEps').textContent = totalEpisodesCount;
 
@@ -1679,7 +1971,7 @@
 
       renderCards(list, element, isCollection = false) {
         if (!list.length) {
-          element.innerHTML = `<p class="text-sm text-slate-400 col-span-full py-4 text-center">No items found.</p>`;
+          element.innerHTML = `<p class="text-sm text-slate-400 col-span-full py-4 text-center">No items found matching your filter.</p>`;
           return;
         }
         element.innerHTML = list.map(item => {
@@ -1693,18 +1985,18 @@
             <div onclick="app.selectAnime('${encoded}')" class="group cursor-pointer anime-card rounded-xl overflow-hidden flex flex-col">
               <div class="relative aspect-[3/4] bg-slate-900 overflow-hidden">
                 <img src="${item.coverImage.large}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                <div class="absolute inset-0 bg-gradient-to-t from-[#0b0c10] via-transparent to-transparent opacity-70"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0b0c12] via-transparent to-transparent opacity-75"></div>
                 ${hasSub ? `<span class="absolute top-2 left-2 brand-accent text-white text-[10px] font-extrabold px-2 py-0.5 rounded shadow">සිංහල Sub</span>` : ''}
               </div>
               <div class="p-2.5 flex-1 flex flex-col justify-between space-y-1.5">
-                <h3 class="text-xs font-bold text-slate-100 truncate group-hover:text-sky-400 transition flex items-center gap-1.5">
+                <h3 class="text-xs font-bold text-slate-100 truncate group-hover:text-pink-300 transition flex items-center gap-1.5">
                   <span class="w-1.5 h-1.5 rounded-full ${hasSub ? 'bg-emerald-400' : 'bg-sky-400'} shrink-0"></span>
                   <span class="truncate">${title}</span>
                 </h3>
                 <div class="flex items-center justify-between text-[10px] text-slate-400 font-semibold">
                   <span>${item.format || 'TV'} • ${item.seasonYear || '2026'}</span>
                   <div class="flex items-center gap-1.5">
-                    <span class="bg-white/5 px-1.5 py-0.5 rounded text-slate-300">Ep ${epCountText}</span>
+                    <span class="bg-purple-500/15 text-purple-300 px-1.5 py-0.5 rounded">Ep ${epCountText}</span>
                     <span class="text-amber-400">★ ${item.averageScore ? (item.averageScore/10).toFixed(1) : '8.5'}</span>
                   </div>
                 </div>
@@ -1715,6 +2007,7 @@
       }
 
       selectAnime(encodedJson) {
+        this.stopAllMedia();
         this.selectedAnime = JSON.parse(decodeURIComponent(encodedJson));
         this.openDetails();
       }
@@ -1756,7 +2049,7 @@
           colBox.classList.remove('hidden');
           document.getElementById('detCollectionCount').textContent = `${eps.length} Episodes in Season`;
           colGrid.innerHTML = eps.map(ep => `
-            <button onclick="app.startWatchSession(${ep.epNum})" class="bg-[#0b0c10] hover:bg-sky-500 border border-white/15 hover:border-sky-400 text-white font-bold py-2 px-3 rounded-lg text-xs transition shadow flex items-center justify-center gap-1">
+            <button onclick="app.startWatchSession(${ep.epNum})" class="bg-[#0b0c12] hover:bg-gradient-to-r hover:from-sky-500 hover:to-purple-600 border border-purple-500/30 text-white font-bold py-2 px-3 rounded-lg text-xs transition shadow flex items-center justify-center gap-1">
               <span>▶ Ep ${ep.epNum}</span>
             </button>
           `).join('');
@@ -1787,7 +2080,7 @@
         const listContainer = document.getElementById('episodeButtonsList');
         if (publishedEps.length > 0) {
           listContainer.innerHTML = publishedEps.map(ep => 
-            `<button id="epBtn_${ep.epNum}" onclick="app.playEp(${ep.epNum})" class="py-2 rounded-lg text-xs font-bold bg-[#0b0c10] hover:bg-sky-500 border border-white/10 transition shadow">${ep.epNum}</button>`
+            `<button id="epBtn_${ep.epNum}" onclick="app.playEp(${ep.epNum})" class="py-2 rounded-lg text-xs font-bold bg-[#0b0c12] hover:bg-purple-600 border border-white/10 transition shadow">${ep.epNum}</button>`
           ).join('');
           const epToPlay = startEpNum && publishedEps.some(e => Number(e.epNum) === Number(startEpNum)) ? Number(startEpNum) : Number(publishedEps[0].epNum);
           this.playEp(epToPlay);
@@ -1825,14 +2118,14 @@
           }
         }
 
-        document.querySelectorAll('#episodeButtonsList button').forEach(b => b.classList.remove('brand-accent', 'border-sky-400'));
+        document.querySelectorAll('#episodeButtonsList button').forEach(b => b.classList.remove('brand-accent', 'border-purple-400'));
         const activeBtn = document.getElementById(`epBtn_${epNum}`);
-        if (activeBtn) activeBtn.classList.add('brand-accent', 'border-sky-400');
+        if (activeBtn) activeBtn.classList.add('brand-accent', 'border-purple-400');
 
         this.saveToHistory(this.selectedAnime, epNum);
 
         const custom = this.subMap[`${this.selectedAnime.id}_${epNum}`];
-        const iframe = document.getElementById('mainPlayer');
+        const mountSlot = document.getElementById('iframeMountSlot');
         const vid = document.getElementById('nativeVideo');
         const syncBar = document.getElementById('iframeSyncBar');
 
@@ -1846,7 +2139,7 @@
           }
 
           if (targetUrl.includes('.mp4') || targetUrl.includes('.m3u8')) {
-            iframe.classList.add('hidden');
+            mountSlot.classList.add('hidden');
             syncBar.classList.add('hidden');
             vid.classList.remove('hidden');
 
@@ -1859,8 +2152,18 @@
             }
           } else {
             vid.classList.add('hidden');
-            iframe.classList.remove('hidden');
-            iframe.src = targetUrl;
+            mountSlot.classList.remove('hidden');
+            
+            const freshIframe = document.createElement('iframe');
+            freshIframe.id = 'mainPlayer';
+            freshIframe.className = 'w-full h-full border-0';
+            freshIframe.allowFullscreen = true;
+            freshIframe.allow = 'autoplay; encrypted-media; fullscreen';
+            if (this.adShieldOn) {
+              freshIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+            }
+            freshIframe.src = targetUrl;
+            mountSlot.appendChild(freshIframe);
             
             if (this.activeSubs.length > 0) {
               syncBar.classList.remove('hidden');
@@ -2107,7 +2410,7 @@
         if (list.length) {
           document.getElementById('studioResults').innerHTML = list.slice(0, 6).map(m => {
             const t = m.title.english || m.title.romaji;
-            return `<div onclick="app.studioPick(${m.id}, '${t.replace(/'/g, "\\'")}', '${m.coverImage.large}', ${m.episodes || 12})" class="cursor-pointer bg-[#0b0c10] border border-white/10 p-2.5 rounded-lg text-xs hover:bg-sky-600/30 transition flex justify-between"><span>${t}</span><span class="text-slate-400">${m.episodes || '?'} Eps</span></div>`;
+            return `<div onclick="app.studioPick(${m.id}, '${t.replace(/'/g, "\\'")}', '${m.coverImage.large}', ${m.episodes || 12})" class="cursor-pointer bg-[#0b0c10] border border-white/10 p-2.5 rounded-lg text-xs hover:bg-purple-600/30 transition flex justify-between"><span>${t}</span><span class="text-slate-400">${m.episodes || '?'} Eps</span></div>`;
           }).join('');
         }
       }
