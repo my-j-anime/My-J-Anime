@@ -21,6 +21,14 @@
     h1, h2, h3, .anime-font {
       font-family: 'Outfit', 'Noto Sans Sinhala', sans-serif;
     }
+    /* Prevent white browser autofill background on dark inputs */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus {
+      -webkit-text-fill-color: #ffffff;
+      -webkit-box-shadow: 0 0 0px 1000px #0b0e18 inset;
+      transition: background-color 5000s ease-in-out 0s;
+    }
     .anime-glass {
       background: rgba(14, 17, 29, 0.78);
       backdrop-filter: blur(18px);
@@ -73,9 +81,10 @@
         </div>
       </div>
 
-      <!-- Search Bar -->
+      <!-- Search Bar (Autofill Disabled) -->
       <div class="flex-1 max-w-md relative">
-        <input id="searchInput" type="text" placeholder="Search anime (e.g. Solo Leveling, Bleach)..." 
+        <input id="searchInput" name="anime_catalog_search_box" type="search" autocomplete="off" autocorrect="off" spellcheck="false"
+          placeholder="Search anime (e.g. Solo Leveling, Bleach)..." 
           onkeydown="if(event.key==='Enter') app.searchAnime()"
           class="w-full bg-[#0b0e18] border border-white/10 rounded-full px-4 py-2 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-pink-500 transition shadow-inner" />
       </div>
@@ -138,14 +147,14 @@
         <div id="gridHomeHistory" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
       </section>
 
-      <!-- Sinhala Subtitled Section (Grouped by Anime Collection) -->
+      <!-- Sinhala Subtitled Collections -->
       <section class="space-y-4">
         <div class="flex items-center justify-between">
           <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-wide flex items-center gap-2.5">
             <span class="w-3 h-3 rounded-full bg-gradient-to-r from-pink-500 to-violet-500 animate-ping"></span>
             <span>Sinhala Subtitled Collections</span>
           </h2>
-          <span class="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1 rounded-full font-semibold">Fast Stream + CC</span>
+          <span class="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1 rounded-full font-semibold">Season Collections</span>
         </div>
         <div id="gridSinhala" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           <p class="text-sm text-slate-400 col-span-full py-6 text-center">Loading Sinhala subbed collection...</p>
@@ -189,7 +198,7 @@
       </div>
     </div>
 
-    <!-- DETAILS PAGE (With Full Episode Collection List Inside) -->
+    <!-- DETAILS PAGE -->
     <div id="viewDetails" class="hidden space-y-8">
       <div class="text-xs text-slate-400 flex items-center gap-2">
         <span onclick="app.goHome()" class="cursor-pointer hover:text-pink-400 transition">Home</span> › <span id="detCrumb" class="text-slate-200 font-medium">Anime Details</span>
@@ -217,7 +226,6 @@
 
           <p id="detDesc" class="text-sm text-slate-300 leading-relaxed max-w-4xl"></p>
 
-          <!-- Dynamic Action Buttons -->
           <div class="flex flex-wrap items-center gap-3 pt-2">
             <button id="watchNowBtn" onclick="app.startWatchSession()" class="hidden neon-gradient text-white font-bold px-7 py-3 rounded-full text-sm flex items-center gap-2 shadow-lg shadow-pink-500/30 transition">
               ▶ Watch Episode 1
@@ -230,7 +238,7 @@
           <!-- EPISODE COLLECTION GRID INSIDE THIS ANIME -->
           <div id="detCollectionBox" class="hidden pt-4 border-t border-white/10 space-y-3">
             <div class="flex items-center justify-between">
-              <h3 class="text-xs font-extrabold uppercase tracking-wider text-pink-400">📂 Available Sinhala Subtitled Episodes</h3>
+              <h3 class="text-xs font-extrabold uppercase tracking-wider text-pink-400">📂 Season Episodes Collection</h3>
               <span id="detCollectionCount" class="text-xs text-emerald-400 font-bold"></span>
             </div>
             <div id="detEpisodesGrid" class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8 gap-2"></div>
@@ -247,18 +255,15 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-4">
-          <!-- Fast Video Container -->
           <div id="playerContainer" class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/15 shadow-2xl group">
             <video id="nativeVideo" class="w-full h-full object-contain bg-black hidden" controls playsinline preload="metadata"></video>
             <iframe id="mainPlayer" class="w-full h-full border-0" allowfullscreen allow="autoplay; encrypted-media; fullscreen"></iframe>
             
-            <!-- Sinhala Subtitle Overlay -->
             <div id="captionOverlay" class="pointer-events-none absolute bottom-12 left-0 right-0 px-4 text-center z-30 transition-opacity">
               <span id="captionText" class="sinhala-caption text-base sm:text-xl font-bold text-white hidden"></span>
             </div>
           </div>
 
-          <!-- Iframe Subtitle Timer Bar (For Embed Videos) -->
           <div id="iframeSyncBar" class="hidden anime-glass rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs border border-pink-500/30">
             <div class="flex items-center gap-2">
               <button id="subTimerBtn" onclick="app.toggleIframeTimer()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-full transition">
@@ -270,7 +275,6 @@
             <div class="text-[11px] text-slate-400">Click "Start Sub Sync" when video starts playing</div>
           </div>
 
-          <!-- Caption & Sync Controls Bar -->
           <div class="anime-glass rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div class="flex items-center gap-2 font-bold text-pink-400 text-sm" id="watchEpHeading">Episode 1</div>
             <div class="flex flex-wrap items-center gap-2">
@@ -308,22 +312,32 @@
 
     <!-- OWNER STUDIO MANAGEMENT -->
     <div id="viewStudio" class="hidden space-y-8">
-      <div class="flex justify-between items-center border-b border-white/10 pb-4">
+      <div class="flex flex-wrap justify-between items-center gap-4 border-b border-white/10 pb-4">
         <div>
           <h2 class="text-xl font-extrabold text-white">Owner Studio Dashboard</h2>
-          <p class="text-xs text-slate-400 mt-0.5">Add episodes to an anime collection (Use fast Embed URLs like Streamwish / Abyss / Anikoto)</p>
+          <p class="text-xs text-slate-400 mt-0.5">Publish single episodes, bulk-publish entire seasons, or manage/delete existing anime</p>
         </div>
         <button onclick="app.goHome()" class="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full text-xs font-semibold transition">← Exit Studio</button>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Publish Form -->
+        <!-- Left Column: Single & Bulk Season Publisher -->
         <div class="anime-glass rounded-3xl p-6 space-y-4 shadow-xl h-fit">
-          <h3 class="text-sm font-bold text-pink-400 uppercase tracking-wider">1. Add Episode to Anime Collection</h3>
+          <!-- Mode Tabs -->
+          <div class="flex items-center gap-2 bg-[#06070d] p-1 rounded-xl border border-white/10">
+            <button id="tabSingleBtn" onclick="app.switchStudioTab('single')" class="flex-1 py-2 rounded-lg text-xs font-bold neon-gradient text-white transition">
+              + Single Episode
+            </button>
+            <button id="tabBulkBtn" onclick="app.switchStudioTab('bulk')" class="flex-1 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition">
+              ⚡ Bulk Season Publish (All at Once)
+            </button>
+          </div>
+
+          <!-- Series Search -->
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Search Series on AniList (Pick exact same series for all episodes)</label>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Step 1: Search Anime Series</label>
             <div class="flex gap-2">
-              <input id="studioQuery" type="text" placeholder="Type name..." class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
+              <input id="studioQuery" type="text" autocomplete="off" placeholder="Type anime name..." class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
               <button onclick="app.studioSearch()" class="neon-gradient font-bold px-5 py-2.5 rounded-xl text-xs transition">Search</button>
             </div>
             <div id="studioResults" class="mt-2 space-y-1.5 max-h-40 overflow-y-auto pr-1"></div>
@@ -333,39 +347,89 @@
           <input type="hidden" id="pubPoster" />
 
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Selected Collection</label>
-            <input id="pubTitle" type="text" readonly class="w-full bg-[#06070d]/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-300 cursor-not-allowed" />
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Selected Anime Collection</label>
+            <input id="pubTitle" type="text" readonly placeholder="Select an anime above or from Requests..." class="w-full bg-[#06070d]/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-pink-300 font-bold cursor-not-allowed" />
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-1">Episode No.</label>
-              <input id="pubEp" type="number" value="1" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
+          <!-- SINGLE EPISODE PANEL -->
+          <div id="panelSinglePublish" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Episode No.</label>
+                <input id="pubEp" type="number" value="1" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-pink-300 mb-1">Embed URL / Iframe / .MP4</label>
+                <input id="pubUrl" type="text" autocomplete="off" placeholder="Paste video link..." class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
+              </div>
             </div>
+
             <div>
-              <label class="block text-xs font-semibold text-pink-300 mb-1">Fast Embed URL / Iframe / .MP4</label>
-              <input id="pubUrl" type="text" placeholder="Paste Embed URL or iframe..." class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
+              <label class="block text-xs font-semibold text-emerald-400 mb-1">Sinhala Subtitle File (.SRT or .ASS)</label>
+              <input id="pubSubFile" type="file" accept=".srt,.ass" class="w-full bg-[#06070d] border border-emerald-500/30 rounded-xl px-3 py-2 text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500" />
             </div>
+
+            <button id="publishBtn" onclick="app.publishEp()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-600/20">
+              + Publish Episode
+            </button>
           </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-emerald-400 mb-1">Upload Sinhala Subtitle File (.SRT or .ASS)</label>
-            <input id="pubSubFile" type="file" accept=".srt,.ass" class="w-full bg-[#06070d] border border-emerald-500/30 rounded-xl px-3 py-2 text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500" />
-          </div>
+          <!-- BULK SEASON PANEL (PUBLISH ALL EPISODES AT ONCE) -->
+          <div id="panelBulkPublish" class="hidden space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Start Episode</label>
+                <input id="bulkStartEp" type="number" value="1" min="1" onchange="app.generateBulkRows()" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-3 py-2 text-sm text-white" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Total Episodes in Season</label>
+                <div class="flex gap-2">
+                  <input id="bulkTotalEps" type="number" value="12" min="1" max="100" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-3 py-2 text-sm text-white" />
+                  <button onclick="app.generateBulkRows()" class="bg-violet-600 hover:bg-violet-500 px-3 py-2 rounded-xl text-xs font-bold">Set</button>
+                </div>
+              </div>
+            </div>
 
-          <button id="publishBtn" onclick="app.publishEp()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-600/20">
-            + Publish Episode to Collection
-          </button>
+            <!-- Quick Paste All Links Box -->
+            <div class="bg-[#06070d] border border-white/10 rounded-xl p-3 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-pink-300">⚡ Quick Paste All Season Links (1 Link per line)</span>
+                <button onclick="app.fillBulkFromTextarea()" class="bg-pink-600 hover:bg-pink-500 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold">Auto-Fill Rows ↓</button>
+              </div>
+              <textarea id="bulkPasteBox" rows="3" placeholder="Paste Episode 1 link on line 1&#10;Episode 2 link on line 2&#10;Episode 3 link on line 3..." class="w-full bg-[#0b0e18] border border-white/10 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500"></textarea>
+            </div>
+
+            <!-- Individual Episode Rows inside Season -->
+            <div id="bulkRowsContainer" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
+
+            <button id="bulkPublishBtn" onclick="app.publishBulkSeason()" class="w-full neon-gradient font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-pink-500/25">
+              🚀 Publish Entire Season Now
+            </button>
+          </div>
         </div>
 
-        <!-- Viewer Requests Inbox -->
-        <div class="anime-glass rounded-3xl p-6 space-y-4 shadow-xl h-fit">
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-violet-400 uppercase tracking-wider">2. Viewer Requests (Anikoto.cz Quick-Link)</h3>
-            <button onclick="app.loadRequests()" class="text-xs text-slate-400 hover:text-white">↻ Refresh</button>
+        <!-- Right Column: Viewer Requests & Manage/Delete Published Anime -->
+        <div class="space-y-6">
+          <!-- Viewer Requests Inbox -->
+          <div class="anime-glass rounded-3xl p-6 space-y-4 shadow-xl">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold text-violet-400 uppercase tracking-wider">2. Viewer Requests (One-Click Bulk Setup)</h3>
+              <button onclick="app.loadRequests()" class="text-xs text-slate-400 hover:text-white">↻ Refresh</button>
+            </div>
+            <div id="requestsList" class="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
+              <p class="text-xs text-slate-400">Loading requests...</p>
+            </div>
           </div>
-          <div id="requestsList" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
-            <p class="text-xs text-slate-400">Loading requests...</p>
+
+          <!-- Manage / Delete Published Anime Collections -->
+          <div class="anime-glass rounded-3xl p-6 space-y-4 shadow-xl border border-rose-500/20">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold text-rose-400 uppercase tracking-wider">3. Manage / Delete Published Anime</h3>
+              <span class="text-[11px] text-slate-400" id="studioColCount">0 Series</span>
+            </div>
+            <div id="studioManageList" class="space-y-2.5 max-h-[320px] overflow-y-auto pr-1">
+              <p class="text-xs text-slate-400">Loading published collections...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -477,7 +541,7 @@
         this.currentUser = null;
         this.userHistory = [];
         this.subMap = {};
-        this.animeCollections = {}; // Groups all episodes under a single anime ID
+        this.animeCollections = {};
         this.activeSubs = [];
         this.ccEnabled = true;
         this.subOffset = 0;
@@ -491,6 +555,7 @@
         const vid = document.getElementById('nativeVideo');
         vid.addEventListener('timeupdate', () => this.renderCaptionAtTime(vid.currentTime));
 
+        this.generateBulkRows();
         this.initAuthListener();
       }
 
@@ -869,7 +934,6 @@
         }
       }
 
-      // Group ALL Episodes into ONE Single Card per Anime
       async loadSubbedDB() {
         const grid = document.getElementById('gridSinhala');
         if (!database) return;
@@ -881,7 +945,7 @@
           snap.forEach(dSnap => {
             const row = dSnap.data();
             const keyId = String(row.anilistId);
-            this.subMap[`${keyId}_${row.epNum}`] = row;
+            this.subMap[`${keyId}_${row.epNum}`] = { docId: dSnap.id, ...row };
 
             if (!this.animeCollections[keyId]) {
               this.animeCollections[keyId] = {
@@ -895,12 +959,12 @@
                 description: `Sinhala Subtitled Anime Collection — ${row.animeTitle}`
               };
             }
-            this.animeCollections[keyId].episodesList.push(row);
+            this.animeCollections[keyId].episodesList.push({ docId: dSnap.id, ...row });
           });
 
           const collections = Object.values(this.animeCollections).map(col => {
             col.episodesList.sort((a, b) => Number(a.epNum) - Number(b.epNum));
-            col.episodes = col.episodesList.length; // Show published count on the single card
+            col.episodes = col.episodesList.length;
             return col;
           });
 
@@ -909,9 +973,74 @@
           } else {
             grid.innerHTML = `<p class="text-xs text-slate-400 col-span-full py-2">No subbed collections available currently.</p>`;
           }
+
+          this.renderStudioManageList(collections);
         } catch (e) {
           grid.innerHTML = `<p class="text-xs text-slate-400 col-span-full py-2">No active subbed titles found.</p>`;
         }
+      }
+
+      // Render Manage / Delete Published Anime List in Owner Studio
+      renderStudioManageList(collections) {
+        const listEl = document.getElementById('studioManageList');
+        const countEl = document.getElementById('studioColCount');
+        if (!listEl) return;
+
+        countEl.textContent = `${collections.length} Series`;
+        if (!collections.length) {
+          listEl.innerHTML = `<p class="text-xs text-slate-400">No published anime found.</p>`;
+          return;
+        }
+
+        listEl.innerHTML = collections.map(col => {
+          const safeTitle = col.title.english.replace(/'/g, "\\'");
+          const epBadges = col.episodesList.map(ep => `
+            <span class="inline-flex items-center gap-1 bg-white/5 border border-white/10 px-2 py-0.5 rounded text-[10px] text-slate-200">
+              Ep ${ep.epNum}
+              <button onclick="app.deleteSingleEpisode('${ep.docId}', '${safeTitle}', ${ep.epNum})" title="Delete Ep ${ep.epNum}" class="text-rose-400 hover:text-rose-300 font-bold ml-0.5">×</button>
+            </span>
+          `).join('');
+
+          return `
+            <div class="bg-[#0b0e18] border border-white/10 p-3 rounded-2xl space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <img src="${col.coverImage.large}" class="w-9 h-12 rounded-lg object-cover shrink-0 bg-slate-800" />
+                  <div class="min-w-0">
+                    <h4 class="text-xs font-bold text-white truncate">${col.title.english}</h4>
+                    <p class="text-[10px] text-emerald-400 font-semibold">${col.episodesList.length} Episodes Published</p>
+                  </div>
+                </div>
+                <button onclick="app.deleteEntireAnime(${col.id}, '${safeTitle}')" class="bg-rose-600/20 hover:bg-rose-600 border border-rose-500/30 text-rose-300 hover:text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition shrink-0">
+                  🗑 Delete All
+                </button>
+              </div>
+              <div class="flex flex-wrap gap-1 pt-1 border-t border-white/5">
+                ${epBadges}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      async deleteSingleEpisode(docId, animeTitle, epNum) {
+        if (!database) return;
+        if (!confirm(`Delete Episode ${epNum} of "${animeTitle}"?`)) return;
+        await deleteDoc(doc(database, "sinhala_episodes", docId));
+        await this.loadSubbedDB();
+      }
+
+      async deleteEntireAnime(anilistId, animeTitle) {
+        if (!database) return;
+        const col = this.animeCollections[String(anilistId)];
+        if (!col) return;
+        if (!confirm(`Are you sure you want to completely remove "${animeTitle}" (${col.episodesList.length} episodes) from the website?`)) return;
+
+        for (const ep of col.episodesList) {
+          await deleteDoc(doc(database, "sinhala_episodes", ep.docId));
+        }
+        alert(`"${animeTitle}" has been removed!`);
+        await this.loadSubbedDB();
       }
 
       renderCards(list, element, isCollection = false) {
@@ -953,7 +1082,6 @@
         this.openDetails();
       }
 
-      // Open Anime Details & Show All Episodes of this Anime inside ONE Collection Box
       openDetails() {
         if (!this.selectedAnime) return;
         this.resetIframeTimer();
@@ -988,9 +1116,8 @@
           watchBtn.onclick = () => this.startWatchSession(eps[0].epNum);
           reqBtn.classList.add('hidden');
 
-          // Render the Episode Collection Grid right inside the Anime Details page
           colBox.classList.remove('hidden');
-          document.getElementById('detCollectionCount').textContent = `${eps.length} Episodes in Collection`;
+          document.getElementById('detCollectionCount').textContent = `${eps.length} Episodes in Season`;
           colGrid.innerHTML = eps.map(ep => `
             <button onclick="app.startWatchSession(${ep.epNum})" class="bg-[#0b0e18] hover:bg-pink-600 border border-white/15 hover:border-pink-400 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition shadow flex items-center justify-center gap-1">
               <span>▶ Ep ${ep.epNum}</span>
@@ -1039,7 +1166,6 @@
         const name = this.selectedAnime.title.english || this.selectedAnime.title.romaji;
         document.getElementById('watchEpHeading').textContent = `${name} — Episode ${epNum}`;
 
-        // Highlight active episode button
         document.querySelectorAll('#episodeButtonsList button').forEach(b => b.classList.remove('neon-gradient', 'border-pink-400'));
         const activeBtn = document.getElementById(`epBtn_${epNum}`);
         if (activeBtn) activeBtn.classList.add('neon-gradient', 'border-pink-400');
@@ -1075,7 +1201,6 @@
               vid.src = targetUrl;
             }
           } else {
-            // Fast Iframe Embed Mode
             vid.classList.add('hidden');
             vid.pause();
             vid.src = '';
@@ -1108,7 +1233,7 @@
           requestedBy: requesterName,
           time: Date.now() 
         });
-        alert(`"${name}" සඳහා ඉල්ලීම යොමු කළා! Owner Studio හරහා අනුමත කළ වහාම නැරඹිය හැක.`);
+        alert(`"${name}" සඳහා ඉල්ලීම යොමු කළා! Owner Studio හරහා සීසන් එකම Publish කළ වහාම නැරඹිය හැක.`);
       }
 
       goHome() {
@@ -1144,8 +1269,129 @@
           document.getElementById('viewWatch').classList.add('hidden');
           document.getElementById('viewStudio').classList.remove('hidden');
           this.loadRequests();
+          this.loadSubbedDB();
         } else {
           alert('Incorrect Passcode! (Default is 1234)');
+        }
+      }
+
+      // Studio Tabs: Single vs Bulk Season Publish
+      switchStudioTab(mode) {
+        const singlePanel = document.getElementById('panelSinglePublish');
+        const bulkPanel = document.getElementById('panelBulkPublish');
+        const tabSingle = document.getElementById('tabSingleBtn');
+        const tabBulk = document.getElementById('tabBulkBtn');
+
+        if (mode === 'bulk') {
+          singlePanel.classList.add('hidden');
+          bulkPanel.classList.remove('hidden');
+          tabBulk.className = "flex-1 py-2 rounded-lg text-xs font-bold neon-gradient text-white transition";
+          tabSingle.className = "flex-1 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
+        } else {
+          bulkPanel.classList.add('hidden');
+          singlePanel.classList.remove('hidden');
+          tabSingle.className = "flex-1 py-2 rounded-lg text-xs font-bold neon-gradient text-white transition";
+          tabBulk.className = "flex-1 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
+        }
+      }
+
+      generateBulkRows() {
+        const start = parseInt(document.getElementById('bulkStartEp').value) || 1;
+        const count = Math.min(parseInt(document.getElementById('bulkTotalEps').value) || 12, 100);
+        const container = document.getElementById('bulkRowsContainer');
+
+        let html = '';
+        for (let i = 0; i < count; i++) {
+          const epNum = start + i;
+          html += `
+            <div class="flex items-center gap-2 bg-[#06070d] border border-white/10 p-2 rounded-xl">
+              <span class="text-xs font-extrabold text-pink-400 w-12 shrink-0">Ep ${epNum}</span>
+              <input type="text" data-ep="${epNum}" placeholder="Video URL / Embed..." class="bulk-url-input flex-1 bg-[#0b0e18] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500" />
+              <label class="cursor-pointer bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 px-2 py-1.5 rounded-lg text-[10px] font-bold shrink-0">
+                <span id="subLbl_${epNum}">+ Sub</span>
+                <input type="file" accept=".srt,.ass" data-ep="${epNum}" onchange="document.getElementById('subLbl_${epNum}').textContent='✓ Sub'" class="bulk-sub-input hidden" />
+              </label>
+            </div>
+          `;
+        }
+        container.innerHTML = html;
+      }
+
+      fillBulkFromTextarea() {
+        const lines = document.getElementById('bulkPasteBox').value
+          .split('\n')
+          .map(l => l.trim())
+          .filter(l => l.length > 0);
+        if (!lines.length) return alert("Paste your episode links (one per line) first!");
+
+        // Automatically adjust row count if pasted links exceed current rows
+        const currentInputs = document.querySelectorAll('.bulk-url-input');
+        if (lines.length > currentInputs.length) {
+          document.getElementById('bulkTotalEps').value = lines.length;
+          this.generateBulkRows();
+        }
+
+        const inputs = document.querySelectorAll('.bulk-url-input');
+        lines.forEach((link, idx) => {
+          if (inputs[idx]) inputs[idx].value = link;
+        });
+      }
+
+      async publishBulkSeason() {
+        if (!database) return alert("Database offline.");
+        const id = document.getElementById('pubId').value;
+        const animeTitle = document.getElementById('pubTitle').value;
+        const posterUrl = document.getElementById('pubPoster').value;
+
+        if (!id) return alert("Please select an Anime Series first!");
+
+        const urlInputs = document.querySelectorAll('.bulk-url-input');
+        const subInputs = document.querySelectorAll('.bulk-sub-input');
+
+        const tasks = [];
+        for (let i = 0; i < urlInputs.length; i++) {
+          const epNum = Number(urlInputs[i].dataset.ep);
+          const videoUrl = urlInputs[i].value.trim();
+          if (!videoUrl) continue;
+
+          let subRawText = "";
+          if (subInputs[i] && subInputs[i].files && subInputs[i].files[0]) {
+            subRawText = await subInputs[i].files[0].text();
+          }
+
+          tasks.push({
+            epNum,
+            videoUrl,
+            subRawText
+          });
+        }
+
+        if (!tasks.length) return alert("Enter at least one video URL in the season list!");
+
+        const btn = document.getElementById('bulkPublishBtn');
+        btn.disabled = true;
+        btn.textContent = `Publishing ${tasks.length} Episodes...`;
+
+        try {
+          for (const item of tasks) {
+            await setDoc(doc(database, "sinhala_episodes", `${id}_${item.epNum}`), {
+              anilistId: Number(id),
+              animeTitle,
+              posterUrl,
+              epNum: item.epNum,
+              videoUrl: item.videoUrl,
+              subData: item.subRawText
+            });
+          }
+          alert(`Success! Published ${tasks.length} episodes for "${animeTitle}" at once!`);
+          document.getElementById('bulkPasteBox').value = '';
+          this.generateBulkRows();
+          await this.loadSubbedDB();
+        } catch (err) {
+          alert("Bulk Publish Error: " + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "🚀 Publish Entire Season Now";
         }
       }
 
@@ -1166,23 +1412,24 @@
 
           listEl.innerHTML = reqs.map(r => {
             const safeName = r.name.replace(/'/g, "\\'");
+            const totalEps = r.totalEps || 12;
             const anikotoSearchUrl = `https://anikoto.cz/filter?keyword=${encodeURIComponent(r.name)}`;
             return `
               <div class="bg-[#0b0e18] border border-white/10 p-3.5 rounded-2xl space-y-2.5">
                 <div class="flex items-center justify-between gap-2">
                   <div>
                     <h4 class="text-xs font-bold text-white">${r.name}</h4>
-                    <p class="text-[10px] text-slate-400">By: ${r.requestedBy || 'Viewer'} • AniList ID: ${r.anilistId}</p>
+                    <p class="text-[10px] text-slate-400">By: ${r.requestedBy || 'Viewer'} • ${totalEps} Eps</p>
                   </div>
                   <button onclick="app.deleteRequest('${r.docId}')" title="Delete Request" class="bg-rose-600/20 text-rose-300 hover:bg-rose-600 hover:text-white px-2 py-1 rounded-lg text-[10px] font-bold transition">✕</button>
                 </div>
                 
                 <div class="flex flex-wrap items-center gap-1.5 pt-1 border-t border-white/5">
                   <a href="${anikotoSearchUrl}" target="_blank" class="bg-violet-600/25 border border-violet-500/30 text-violet-300 hover:bg-violet-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition">
-                    🔍 Find on Anikoto
+                    🔍 Anikoto
                   </a>
-                  <button onclick="app.studioPick(${r.anilistId}, '${safeName}', '${r.posterUrl || ''}')" class="bg-pink-600/25 border border-pink-500/30 text-pink-300 hover:bg-pink-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition">
-                    + Add Episode to Collection
+                  <button onclick="app.setupBulkFromRequest(${r.anilistId}, '${safeName}', '${r.posterUrl || ''}', ${totalEps})" class="neon-gradient text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition shadow">
+                    ⚡ Bulk Publish Season (${totalEps} Eps)
                   </button>
                 </div>
               </div>
@@ -1191,6 +1438,14 @@
         } catch (e) {
           listEl.innerHTML = `<p class="text-xs text-rose-400">Failed to load requests.</p>`;
         }
+      }
+
+      setupBulkFromRequest(id, title, poster, totalEps) {
+        this.studioPick(id, title, poster);
+        this.switchStudioTab('bulk');
+        document.getElementById('bulkStartEp').value = 1;
+        document.getElementById('bulkTotalEps').value = totalEps || 12;
+        this.generateBulkRows();
       }
 
       async deleteRequest(docId) {
@@ -1202,22 +1457,21 @@
       async studioSearch() {
         const queryVal = document.getElementById('studioQuery').value.trim();
         if (!queryVal) return;
-        const data = await this.queryAniList(`query ($s: String) { Page(perPage: 5) { media(type: ANIME, search: $s) { id title { english romaji } coverImage { large } } } }`, { s: queryVal });
+        const data = await this.queryAniList(`query ($s: String) { Page(perPage: 5) { media(type: ANIME, search: $s) { id title { english romaji } coverImage { large } episodes } } }`, { s: queryVal });
         if (data?.Page?.media) {
           document.getElementById('studioResults').innerHTML = data.Page.media.map(m => {
             const t = m.title.english || m.title.romaji;
-            return `<div onclick="app.studioPick(${m.id}, '${t.replace(/'/g, "\\'")}', '${m.coverImage.large}')" class="cursor-pointer bg-[#0b0e18] border border-white/10 p-2.5 rounded-xl text-xs hover:bg-pink-600/30 transition">${t}</div>`;
+            return `<div onclick="app.studioPick(${m.id}, '${t.replace(/'/g, "\\'")}', '${m.coverImage.large}', ${m.episodes || 12})" class="cursor-pointer bg-[#0b0e18] border border-white/10 p-2.5 rounded-xl text-xs hover:bg-pink-600/30 transition flex justify-between"><span>${t}</span><span class="text-slate-400">${m.episodes || '?'} Eps</span></div>`;
           }).join('');
         }
       }
 
-      studioPick(id, title, poster) {
+      studioPick(id, title, poster, totalEps = 12) {
         document.getElementById('pubId').value = id;
         document.getElementById('pubTitle').value = title;
         document.getElementById('pubPoster').value = poster;
         document.getElementById('studioResults').innerHTML = '';
         
-        // Auto-increment next episode number if collection already exists
         const existingCol = this.animeCollections[String(id)];
         if (existingCol && existingCol.episodesList.length > 0) {
           const maxEp = Math.max(...existingCol.episodesList.map(e => Number(e.epNum)));
@@ -1225,7 +1479,8 @@
         } else {
           document.getElementById('pubEp').value = 1;
         }
-        document.getElementById('pubUrl').focus();
+        document.getElementById('bulkTotalEps').value = totalEps;
+        this.generateBulkRows();
       }
 
       async publishEp() {
@@ -1260,13 +1515,13 @@
           alert(`Episode ${epNum} added to "${animeTitle}" collection!`);
           fileInput.value = '';
           document.getElementById('pubUrl').value = '';
-          document.getElementById('pubEp').value = Number(epNum) + 1; // Ready for next episode
+          document.getElementById('pubEp').value = Number(epNum) + 1;
           await this.loadSubbedDB();
         } catch (err) {
           alert("Error publishing episode: " + err.message);
         } finally {
           btn.disabled = false;
-          btn.textContent = "+ Publish Episode to Collection";
+          btn.textContent = "+ Publish Episode";
         }
       }
     }
