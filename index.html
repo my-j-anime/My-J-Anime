@@ -79,7 +79,7 @@
           class="w-full bg-[#0b0e18] border border-white/10 rounded-full px-4 py-2 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-pink-500 transition shadow-inner" />
       </div>
 
-      <!-- Right Controls: History, User Login & Owner Studio -->
+      <!-- Right Controls: History, User Login & Hidden Owner Studio -->
       <div class="flex items-center gap-2 shrink-0">
         <!-- History Quick Button (Visible when logged in) -->
         <button id="navHistoryBtn" onclick="app.openHistoryPage()" class="hidden bg-violet-500/15 hover:bg-violet-500/25 border border-violet-500/30 text-violet-300 px-3 py-2 rounded-full text-xs font-semibold transition flex items-center gap-1.5">
@@ -93,8 +93,8 @@
           </button>
         </div>
 
-        <!-- Owner Studio -->
-        <button onclick="app.openLogin()" title="Owner Studio" class="bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-500/40 text-amber-300 px-3 py-2 rounded-full text-xs font-semibold transition flex items-center gap-1">
+        <!-- Owner Studio (Visible ONLY to myjanime44@gmail.com) -->
+        <button id="ownerStudioBtn" onclick="app.openLogin()" title="Owner Studio" class="hidden bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-500/40 text-amber-300 px-3 py-2 rounded-full text-xs font-semibold transition flex items-center gap-1">
           ⚙ <span class="hidden sm:inline">Studio</span>
         </button>
       </div>
@@ -127,7 +127,7 @@
         </div>
       </div>
 
-      <!-- CONTINUE WATCHING / USER WATCH HISTORY SECTION (Shown when signed in & has history) -->
+      <!-- CONTINUE WATCHING / USER WATCH HISTORY SECTION -->
       <section id="homeHistorySection" class="hidden space-y-4">
         <div class="flex items-center justify-between">
           <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-wide flex items-center gap-2">
@@ -301,7 +301,7 @@
       <div class="flex justify-between items-center border-b border-white/10 pb-4">
         <div>
           <h2 class="text-xl font-extrabold text-white">Owner Studio Dashboard</h2>
-          <p class="text-xs text-slate-400 mt-0.5">Publish episodes with Sinhala subtitles & manage viewer requests</p>
+          <p class="text-xs text-slate-400 mt-0.5">Publish episodes with Sinhala subtitles & manage viewer requests via Anikoto</p>
         </div>
         <button onclick="app.goHome()" class="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full text-xs font-semibold transition">← Exit Studio</button>
       </div>
@@ -333,8 +333,8 @@
               <input id="pubEp" type="number" value="1" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-1">Stream / Embed URL</label>
-              <input id="pubUrl" type="text" placeholder="https://... (.mp4, .m3u8, or iframe)" class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
+              <label class="block text-xs font-semibold text-slate-400 mb-1">Anikoto Iframe / Embed URL</label>
+              <input id="pubUrl" type="text" placeholder="Paste iframe code or URL..." class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
             </div>
           </div>
 
@@ -348,13 +348,13 @@
           </button>
         </div>
 
-        <!-- Viewer Requests Inbox -->
+        <!-- Viewer Requests Inbox with 1-Click Anikoto Lookup -->
         <div class="anime-glass rounded-3xl p-6 space-y-4 shadow-xl h-fit">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-violet-400 uppercase tracking-wider">2. Viewer Subtitle Requests</h3>
+            <h3 class="text-sm font-bold text-violet-400 uppercase tracking-wider">2. Viewer Requests (Anikoto Quick-Link)</h3>
             <button onclick="app.loadRequests()" class="text-xs text-slate-400 hover:text-white">↻ Refresh</button>
           </div>
-          <div id="requestsList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+          <div id="requestsList" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
             <p class="text-xs text-slate-400">Loading requests...</p>
           </div>
         </div>
@@ -453,6 +453,8 @@
       measurementId: "G-000QB7VJ7H"
     };
 
+    const OWNER_EMAIL = "myjanime44@gmail.com";
+
     let database = null;
     let auth = null;
     try {
@@ -486,15 +488,24 @@
         this.initAuthListener();
       }
 
-      // Listen for User Sign-In / Sign-Out state & Load Watch History
+      // Listen for User Sign-In / Sign-Out state & Show Studio ONLY for OWNER_EMAIL
       initAuthListener() {
         if (!auth) return;
         onAuthStateChanged(auth, async (user) => {
           const navArea = document.getElementById('userNavArea');
           const navHistoryBtn = document.getElementById('navHistoryBtn');
+          const studioBtn = document.getElementById('ownerStudioBtn');
+
           if (user && !user.isAnonymous) {
             this.currentUser = user;
             navHistoryBtn.classList.remove('hidden');
+
+            if (user.email && user.email.toLowerCase() === OWNER_EMAIL.toLowerCase()) {
+              studioBtn.classList.remove('hidden');
+            } else {
+              studioBtn.classList.add('hidden');
+            }
+
             const displayName = user.displayName || user.email.split('@')[0];
             const avatar = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=ec4899&color=fff`;
             navArea.innerHTML = `
@@ -509,6 +520,7 @@
             this.currentUser = null;
             this.userHistory = [];
             navHistoryBtn.classList.add('hidden');
+            studioBtn.classList.add('hidden');
             document.getElementById('homeHistorySection').classList.add('hidden');
             if (!user) signInAnonymously(auth).catch(() => {});
             navArea.innerHTML = `
@@ -520,7 +532,6 @@
         });
       }
 
-      // Save Watched Episode to Registered User's History in Firestore
       async saveToHistory(anime, epNum) {
         if (!this.currentUser || !database || !anime) return;
         const docId = `${this.currentUser.uid}_${anime.id}`;
@@ -541,7 +552,6 @@
         }
       }
 
-      // Load Registered User's Watch History
       async loadUserHistory() {
         if (!this.currentUser || !database) return;
         try {
@@ -1021,7 +1031,6 @@
         const name = this.selectedAnime.title.english || this.selectedAnime.title.romaji;
         document.getElementById('watchEpHeading').textContent = `${name} — Episode ${epNum}`;
 
-        // Save to logged-in user's watch history
         this.saveToHistory(this.selectedAnime, epNum);
 
         const custom = this.subMap[`${this.selectedAnime.id}_${epNum}`];
@@ -1081,10 +1090,11 @@
           name, 
           anilistId: this.selectedAnime.id, 
           posterUrl: this.selectedAnime.coverImage.large,
+          totalEps: this.selectedAnime.episodes || 12,
           requestedBy: requesterName,
           time: Date.now() 
         });
-        alert(`Successfully requested Sinhala subtitles for "${name}"!`);
+        alert(`"${name}" සඳහා ඉල්ලීම යොමු කළා! Owner Studio හරහා අනුමත කළ වහාම නැරඹිය හැක.`);
       }
 
       goHome() {
@@ -1102,10 +1112,16 @@
       }
 
       openLogin() {
+        if (!this.currentUser || this.currentUser.email.toLowerCase() !== OWNER_EMAIL.toLowerCase()) {
+          return alert("Access Denied: Owner Only!");
+        }
         document.getElementById('modalLogin').classList.remove('hidden');
       }
 
       verifyPass() {
+        if (!this.currentUser || this.currentUser.email.toLowerCase() !== OWNER_EMAIL.toLowerCase()) {
+          return alert("Access Denied!");
+        }
         if (document.getElementById('passInput').value === '1234') {
           document.getElementById('modalLogin').classList.add('hidden');
           document.getElementById('viewHome').classList.add('hidden');
@@ -1134,18 +1150,30 @@
             return;
           }
 
-          listEl.innerHTML = reqs.map(r => `
-            <div class="bg-[#0b0e18] border border-white/10 p-3 rounded-2xl flex items-center justify-between gap-2">
-              <div>
-                <h4 class="text-xs font-bold text-white">${r.name}</h4>
-                <p class="text-[10px] text-slate-400">By: ${r.requestedBy || 'Viewer'} • ID: ${r.anilistId}</p>
+          listEl.innerHTML = reqs.map(r => {
+            const safeName = r.name.replace(/'/g, "\\'");
+            const anikotoSearchUrl = `https://anikoto.to/filter?keyword=${encodeURIComponent(r.name)}`;
+            return `
+              <div class="bg-[#0b0e18] border border-white/10 p-3.5 rounded-2xl space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <div>
+                    <h4 class="text-xs font-bold text-white">${r.name}</h4>
+                    <p class="text-[10px] text-slate-400">By: ${r.requestedBy || 'Viewer'} • AniList ID: ${r.anilistId}</p>
+                  </div>
+                  <button onclick="app.deleteRequest('${r.docId}')" title="Delete Request" class="bg-rose-600/20 text-rose-300 hover:bg-rose-600 hover:text-white px-2 py-1 rounded-lg text-[10px] font-bold transition">✕</button>
+                </div>
+                
+                <div class="flex flex-wrap items-center gap-1.5 pt-1 border-t border-white/5">
+                  <a href="${anikotoSearchUrl}" target="_blank" class="bg-violet-600/25 border border-violet-500/30 text-violet-300 hover:bg-violet-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition">
+                    🔍 Find on Anikoto
+                  </a>
+                  <button onclick="app.studioPick(${r.anilistId}, '${safeName}', '${r.posterUrl || ''}')" class="bg-pink-600/25 border border-pink-500/30 text-pink-300 hover:bg-pink-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition">
+                    + Paste Iframe & Publish
+                  </button>
+                </div>
               </div>
-              <div class="flex items-center gap-1.5">
-                <button onclick="app.studioPick(${r.anilistId}, '${r.name.replace(/'/g, "\\'")}', '${r.posterUrl || ''}')" class="bg-pink-600/20 text-pink-300 hover:bg-pink-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition">Select</button>
-                <button onclick="app.deleteRequest('${r.docId}')" class="bg-rose-600/20 text-rose-300 hover:bg-rose-600 hover:text-white px-2 py-1 rounded-lg text-[10px] font-bold transition">✕</button>
-              </div>
-            </div>
-          `).join('');
+            `;
+          }).join('');
         } catch (e) {
           listEl.innerHTML = `<p class="text-xs text-rose-400">Failed to load requests.</p>`;
         }
@@ -1174,6 +1202,7 @@
         document.getElementById('pubTitle').value = title;
         document.getElementById('pubPoster').value = poster;
         document.getElementById('studioResults').innerHTML = '';
+        document.getElementById('pubUrl').focus();
       }
 
       async publishEp() {
@@ -1185,7 +1214,7 @@
         const videoUrl = document.getElementById('pubUrl').value;
         const fileInput = document.getElementById('pubSubFile');
 
-        if (!id || !videoUrl) return alert("Please select series and provide a video URL.");
+        if (!id || !videoUrl) return alert("Please select series and provide a video/iframe URL.");
 
         const btn = document.getElementById('publishBtn');
         btn.disabled = true;
@@ -1207,6 +1236,7 @@
           });
           alert("Episode & Sinhala Subtitles published successfully!");
           fileInput.value = '';
+          document.getElementById('pubUrl').value = '';
           await this.loadSubbedDB();
         } catch (err) {
           alert("Error publishing episode: " + err.message);
