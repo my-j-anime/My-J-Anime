@@ -45,7 +45,7 @@
     .sinhala-caption {
       font-family: 'Noto Sans Sinhala', sans-serif;
       text-shadow: 0 2px 6px rgba(0, 0, 0, 0.98), 0 0 3px #000, 0 0 12px rgba(0,0,0,0.9);
-      background: rgba(8, 9, 14, 0.72);
+      background: rgba(8, 9, 14, 0.78);
       padding: 4px 14px;
       border-radius: 6px;
       display: inline-block;
@@ -567,7 +567,7 @@
               <button onclick="app.resetIframeTimer()" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg">↺ Reset</button>
               <span id="timerDisplay" class="font-mono text-sky-400 font-bold px-2">00:00</span>
             </div>
-            <div class="text-[11px] text-emerald-300 font-medium">✓ Sinhala Subtitle Ready — Press Start when video begins</div>
+            <div class="text-[11px] text-emerald-300 font-medium">✓ Sinhala Subtitles Active — Use Sync or Reset if needed</div>
           </div>
 
           <div class="panel-dark rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
@@ -659,22 +659,23 @@
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-emerald-400 mb-1">Sinhala Subtitle File (.SRT or .ASS - Optional now, can add later)</label>
+              <label class="block text-xs font-semibold text-emerald-400 mb-1">Sinhala Subtitle File (.SRT or .ASS - Leave empty for Auto AI Sub!)</label>
               <input id="pubSubFile" type="file" accept=".srt,.ass" class="w-full bg-[#0b0c10] border border-emerald-500/30 rounded-lg px-3 py-2 text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500" />
             </div>
 
             <button id="publishBtn" onclick="app.publishEp()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-lg text-sm transition shadow-lg">
-              + Publish Episode
+              + Publish Episode (Auto-Sub Enabled)
             </button>
           </div>
-              <!-- 🤖 BUILT-IN AI AUTO-SUBTITLE BOT PANEL -->
+
+          <!-- 🤖 BUILT-IN AI AUTO-SUBTITLE BOT PANEL -->
           <div class="bg-gradient-to-br from-purple-950/40 via-[#0b0c10] to-sky-950/30 border border-purple-500/40 rounded-xl p-4 space-y-3 mt-4">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <span class="text-base">🤖</span>
                 <h4 class="text-xs font-black uppercase tracking-wider text-purple-300">AI Anime Subtitle Bot (Natural Sinhala)</h4>
               </div>
-              <span id="aiBotStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Ready</span>
+              <span id="aiBotStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Auto-Ready</span>
             </div>
 
             <div>
@@ -684,7 +685,8 @@
                 <button onclick="app.saveGeminiKey()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">Save Key</button>
               </div>
             </div>
-			<div>
+
+            <div>
               <label class="block text-[10px] font-bold text-slate-400 mb-1">1B. Free Subdl.com API Key (Auto-Fetch English Subs)</label>
               <div class="flex gap-1.5">
                 <input id="subdlApiKeyInput" type="password" placeholder="Subdl API Key..." class="flex-1 bg-[#151822] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-sky-400" />
@@ -719,6 +721,7 @@
               <span>✨</span> <span>Auto-Find / Translate & Attach Sinhala Subtitles</span>
             </button>
           </div>
+
           <div id="panelBulkPublish" class="hidden space-y-4">
             <div class="grid grid-cols-2 gap-3">
               <div>
@@ -745,7 +748,7 @@
             <div id="bulkRowsContainer" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
 
             <button id="bulkPublishBtn" onclick="app.publishBulkSeason()" class="w-full brand-accent font-bold py-3 rounded-lg text-sm transition shadow-lg">
-              🚀 Publish Entire Season Now
+              🚀 Publish Entire Season Now (With Auto-Sub)
             </button>
           </div>
         </div>
@@ -1466,8 +1469,8 @@
             const timeLineIdx = bLines.findIndex(l => l.includes('-->'));
             if (timeLineIdx !== -1) {
               const [sStr, eStr] = bLines[timeLineIdx].split('-->').map(s => s.trim());
-              const start = this.timeToSec(sStr.replace(',', '.'));
-              const end = this.timeToSec(eStr.replace(',', '.'));
+              const start = this.timeToSec(sStr);
+              const end = this.timeToSec(eStr);
               const text = bLines.slice(timeLineIdx + 1).join('<br>').replace(/<[^>]*>/g, (tag) => tag === '<br>' ? '<br>' : '').trim();
               if (text) cues.push({ start, end, text });
             }
@@ -1477,9 +1480,12 @@
       }
 
       timeToSec(tStr) {
-        const parts = tStr.split(':');
+        const clean = tStr.replace(',', '.').trim();
+        const parts = clean.split(':');
         if (parts.length === 3) {
-          return parseFloat(parts[0]) * 3600 + parseFloat(parts[1]) * 60 + parseFloat(parts[2]);
+          return (parseFloat(parts[0]) || 0) * 3600 + (parseFloat(parts[1]) || 0) * 60 + (parseFloat(parts[2]) || 0);
+        } else if (parts.length === 2) {
+          return (parseFloat(parts[0]) || 0) * 60 + (parseFloat(parts[1]) || 0);
         }
         return 0;
       }
@@ -1590,6 +1596,7 @@
           this.activeSubs = this.parseSubtitles(e.target.result);
           if (this.activeSubs.length > 0 && document.getElementById('mainPlayer')) {
             document.getElementById('iframeSyncBar').classList.remove('hidden');
+            if (!this.iframeRunning) this.toggleIframeTimer();
           }
           alert(`Loaded ${this.activeSubs.length} Sinhala subtitle lines!`);
         };
@@ -1854,7 +1861,7 @@
           }
 
           this.renderStudioManageList(collections);
-        this.populateAiEpisodeDropdown(collections);
+          this.populateAiEpisodeDropdown(collections);
         } catch (e) {
           grid.innerHTML = `<p class="text-xs text-slate-400 col-span-full py-2">No active subbed titles found.</p>`;
         }
@@ -2158,6 +2165,7 @@
             
             if (this.activeSubs.length > 0) {
               syncBar.classList.remove('hidden');
+              this.toggleIframeTimer();
             } else {
               syncBar.classList.add('hidden');
             }
@@ -2313,8 +2321,10 @@
         btn.textContent = `Publishing ${tasks.length} Episodes...`;
 
         try {
+          const unsubbedDocIds = [];
           for (const item of tasks) {
-            await setDoc(doc(database, "sinhala_episodes", `${id}_${item.epNum}`), {
+            const docId = `${id}_${item.epNum}`;
+            await setDoc(doc(database, "sinhala_episodes", docId), {
               anilistId: Number(id),
               animeTitle,
               posterUrl,
@@ -2322,16 +2332,30 @@
               videoUrl: item.videoUrl,
               subData: item.subRawText
             });
+            if (!item.subRawText) unsubbedDocIds.push(docId);
           }
-          alert(`Success! Published ${tasks.length} episodes for "${animeTitle}" at once!`);
+
           document.getElementById('bulkPasteBox').value = '';
           this.generateBulkRows();
           await this.loadSubbedDB();
+
+          // Auto-translate unsubbed episodes in sequence if Gemini key is saved
+          const hasGeminiKey = document.getElementById('geminiApiKeyInput')?.value.trim() || localStorage.getItem('myjanime_gemini_key');
+          if (unsubbedDocIds.length > 0 && hasGeminiKey) {
+            const sel = document.getElementById('aiTargetDocSelect');
+            for (let i = 0; i < unsubbedDocIds.length; i++) {
+              btn.textContent = `🤖 Auto-Subbing Episode ${i + 1} of ${unsubbedDocIds.length}...`;
+              if (sel) sel.value = unsubbedDocIds[i];
+              await this.runAiAutoSubtitleBot(true);
+            }
+          }
+
+          alert(`✅ Success! Published ${tasks.length} episodes for "${animeTitle}"!`);
         } catch (err) {
           alert("Bulk Publish Error: " + err.message);
         } finally {
           btn.disabled = false;
-          btn.textContent = "🚀 Publish Entire Season Now";
+          btn.textContent = "🚀 Publish Entire Season Now (With Auto-Sub)";
         }
       }
 
@@ -2423,7 +2447,7 @@
         this.generateBulkRows();
       }
 
-     async publishEp() {
+      async publishEp() {
         if (!database) return alert("Database offline.");
         const id = document.getElementById('pubId').value;
         const animeTitle = document.getElementById('pubTitle').value;
@@ -2443,8 +2467,10 @@
           subRawText = await fileInput.files[0].text();
         }
 
+        const docId = `${id}_${epNum}`;
+
         try {
-          await setDoc(doc(database, "sinhala_episodes", `${id}_${epNum}`), {
+          await setDoc(doc(database, "sinhala_episodes", docId), {
             anilistId: Number(id),
             animeTitle,
             posterUrl,
@@ -2452,20 +2478,32 @@
             videoUrl,
             subData: subRawText
           });
-          alert(`Episode ${epNum} added to "${animeTitle}" collection!`);
+
           fileInput.value = '';
           document.getElementById('pubUrl').value = '';
           document.getElementById('pubEp').value = Number(epNum) + 1;
           await this.loadSubbedDB();
+
+          // Automatically fetch & translate Sinhala subtitles if no manual file was provided
+          if (!subRawText) {
+            const sel = document.getElementById('aiTargetDocSelect');
+            if (sel) {
+              sel.value = docId;
+              btn.textContent = "🤖 Auto-Fetching & Translating Sinhala Sub...";
+              await this.runAiAutoSubtitleBot(true);
+            }
+          } else {
+            alert(`Episode ${epNum} added to "${animeTitle}" collection!`);
+          }
         } catch (err) {
           alert("Error publishing episode: " + err.message);
         } finally {
           btn.disabled = false;
-          btn.textContent = "+ Publish Episode";
+          btn.textContent = "+ Publish Episode (Auto-Sub Enabled)";
         }
       }
 
-     // ==========================================
+      // ==========================================
       // 🤖 BUILT-IN AI AUTO-SUBTITLE BOT ENGINE
       // ==========================================
       saveGeminiKey() {
@@ -2503,84 +2541,100 @@
         sel.innerHTML = opts;
       }
 
-  async autoFetchEnglishSubtitle(animeTitle, epNum) {
+      async autoFetchEnglishSubtitle(animeTitle, epNum) {
         const subdlKey = document.getElementById('subdlApiKeyInput')?.value.trim() || localStorage.getItem('myjanime_subdl_key');
-        if (!subdlKey) {
-          console.warn("No Subdl API key found.");
-          return null;
+        let seasonNum = 1;
+        let cleanTitle = animeTitle;
+
+        const seasonMatch = animeTitle.match(/(?:season\s*(\d+)|(\d+)(?:nd|rd|th)\s*season|\bs(\d+)\b)/i);
+        if (seasonMatch) {
+          seasonNum = Number(seasonMatch[1] || seasonMatch[2] || seasonMatch[3]);
+          cleanTitle = animeTitle.replace(/[:\-–]?\s*(?:season\s*\d+|\d+(?:nd|rd|th)\s*season|\bs\d+\b)/i, '').trim();
         }
 
-        try {
-          let seasonNum = 1;
-          let cleanTitle = animeTitle;
+        const epPad = String(epNum).padStart(2, '0');
+        const sPad = String(seasonNum).padStart(2, '0');
+        const epRegex = new RegExp(`(?:S${sPad}E${epPad}|E${epPad}|\\b${epPad}\\b)`, 'i');
 
-          const seasonMatch = animeTitle.match(/(?:season\s*(\d+)|(\d+)(?:nd|rd|th)\s*season|\bs(\d+)\b)/i);
-          if (seasonMatch) {
-            seasonNum = Number(seasonMatch[1] || seasonMatch[2] || seasonMatch[3]);
-            cleanTitle = animeTitle.replace(/[:\-–]?\s*(?:season\s*\d+|\d+(?:nd|rd|th)\s*season|\bs\d+\b)/i, '').trim();
-          }
+        // SOURCE 1: Subdl.com API
+        if (subdlKey) {
+          try {
+            const searchUrl = `https://api.subdl.com/api/v1/subtitles?api_key=${encodeURIComponent(subdlKey)}&film_name=${encodeURIComponent(cleanTitle)}&languages=EN&season_number=${seasonNum}&type=tv`;
+            const res = await fetch(searchUrl);
+            const data = await res.json();
 
-          // 1. Search without strict episode_number first so season packs & untagged files also appear
-          const searchUrl = `https://api.subdl.com/api/v1/subtitles?api_key=${encodeURIComponent(subdlKey)}&film_name=${encodeURIComponent(cleanTitle)}&languages=EN&season_number=${seasonNum}&type=tv`;
-          const res = await fetch(searchUrl);
-          const data = await res.json();
+            if (data?.status && data?.subtitles?.length > 0) {
+              let matchedSub = data.subtitles.find(s => Number(s.episode_number) === Number(epNum))
+                            || data.subtitles.find(s => epRegex.test(s.release_name || s.name || ''))
+                            || data.subtitles[0];
 
-          if (!data?.status || !data?.subtitles?.length) {
-            console.warn("Subdl returned no subtitles:", data);
-            return null;
-          }
+              const zipDownloadUrl = `https://dl.subdl.com${matchedSub.url}`;
+              const proxies = [
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(zipDownloadUrl)}`,
+                `https://corsproxy.io/?${encodeURIComponent(zipDownloadUrl)}`
+              ];
 
-          // 2. Find matching episode by episode_number OR filename pattern (S02E01, E01, - 01)
-          const epPad = String(epNum).padStart(2, '0');
-          const sPad = String(seasonNum).padStart(2, '0');
-          const epRegex = new RegExp(`(?:S${sPad}E${epPad}|E${epPad}|\\b${epPad}\\b)`, 'i');
-
-          let matchedSub = data.subtitles.find(s => Number(s.episode_number) === Number(epNum))
-                        || data.subtitles.find(s => epRegex.test(s.release_name || s.name || ''))
-                        || data.subtitles[0];
-
-          const zipDownloadUrl = `https://dl.subdl.com${matchedSub.url}`;
-
-          // 3. Try multiple CORS proxies to download the ZIP
-          const proxies = [
-            `https://api.allorigins.win/raw?url=${encodeURIComponent(zipDownloadUrl)}`,
-            `https://corsproxy.io/?${encodeURIComponent(zipDownloadUrl)}`
-          ];
-
-          let blob = null;
-          for (const pUrl of proxies) {
-            try {
-              const zipRes = await fetch(pUrl);
-              if (zipRes.ok) {
-                blob = await zipRes.blob();
-                if (blob && blob.size > 100) break;
+              let blob = null;
+              for (const pUrl of proxies) {
+                try {
+                  const zipRes = await fetch(pUrl);
+                  if (zipRes.ok) {
+                    blob = await zipRes.blob();
+                    if (blob && blob.size > 100) break;
+                  }
+                } catch (err) {}
               }
-            } catch (err) {}
+
+              if (blob) {
+                const zip = await JSZip.loadAsync(blob);
+                const subFiles = Object.keys(zip.files).filter(f => f.toLowerCase().endsWith('.srt') || f.toLowerCase().endsWith('.ass'));
+                if (subFiles.length > 0) {
+                  const targetFile = subFiles.find(f => epRegex.test(f)) || subFiles[0];
+                  return await zip.files[targetFile].async('string');
+                }
+              }
+            }
+          } catch (e) {
+            console.warn("Subdl fetch warning:", e);
           }
-
-          if (!blob) return null;
-
-          const zip = await JSZip.loadAsync(blob);
-          const subFiles = Object.keys(zip.files).filter(f => f.toLowerCase().endsWith('.srt') || f.toLowerCase().endsWith('.ass'));
-          if (!subFiles.length) return null;
-
-          // If it's a multi-episode zip pack, pick the matching episode file inside the zip
-          const targetFile = subFiles.find(f => epRegex.test(f)) || subFiles[0];
-          return await zip.files[targetFile].async('string');
-
-        } catch (e) {
-          console.warn("Subdl fetch error:", e);
-          return null;
         }
+
+        // SOURCE 2: OpenSubtitles REST Fallback
+        try {
+          const query = encodeURIComponent(`${cleanTitle} S${sPad}E${epPad}`);
+          const osRes = await fetch(`https://rest.opensubtitles.org/search/query-${query}/sublanguageid-eng`, {
+            headers: { 'X-User-Agent': 'TemporaryUserAgent' }
+          });
+          if (osRes.ok) {
+            const list = await osRes.json();
+            if (list && list.length > 0 && list[0].SubDownloadLink) {
+              const srtUrl = list[0].SubDownloadLink.replace('.gz', '');
+              const proxySrt = `https://api.allorigins.win/raw?url=${encodeURIComponent(srtUrl)}`;
+              const subRes = await fetch(proxySrt);
+              if (subRes.ok) return await subRes.text();
+            }
+          }
+        } catch (e) {
+          console.warn("OpenSubtitles fallback warning:", e);
+        }
+
+        return null;
       }
 
-      async runAiAutoSubtitleBot() {
+      async runAiAutoSubtitleBot(isAutoTrigger = false) {
         const apiKey = document.getElementById('geminiApiKeyInput').value.trim() || localStorage.getItem('myjanime_gemini_key');
-        if (!apiKey) return alert("Please paste and save your Free Gemini API Key first!");
+        if (!apiKey) {
+          if (!isAutoTrigger) alert("Please paste and save your Free Gemini API Key first!");
+          else alert("Episode Published! (Tip: Save your Gemini API Key in the AI Bot box to enable automatic Sinhala subtitles on publish).");
+          return;
+        }
 
         const sel = document.getElementById('aiTargetDocSelect');
         const docId = sel.value;
-        if (!docId) return alert("Please select a Published Episode from the dropdown!");
+        if (!docId) {
+          if (!isAutoTrigger) alert("Please select a Published Episode from the dropdown!");
+          return;
+        }
 
         const selectedOpt = sel.options[sel.selectedIndex];
         const animeTitle = selectedOpt.dataset.title;
@@ -2600,16 +2654,16 @@
 
         try {
           let rawEngText = "";
-          if (fileInput.files && fileInput.files[0]) {
+          if (!isAutoTrigger && fileInput.files && fileInput.files[0]) {
             progText.textContent = "Reading uploaded English subtitle file...";
             rawEngText = await fileInput.files[0].text();
           } else {
-            progText.textContent = `Searching English subtitles for ${animeTitle} Ep ${epNum}...`;
+            progText.textContent = `Auto-searching English subtitles for ${animeTitle} Ep ${epNum}...`;
             rawEngText = await this.autoFetchEnglishSubtitle(animeTitle, epNum);
           }
 
           if (!rawEngText) {
-            throw new Error("Could not auto-fetch English subtitles for this episode. Please select the English .SRT/.ASS file in Step 3 and click Translate!");
+            throw new Error(`Episode published, but English subtitles were not found automatically for "${animeTitle} Ep ${epNum}". You can upload an .SRT/.ASS file manually in Step 3.`);
           }
 
           const parsedCues = this.parseSubtitlesForBot(rawEngText);
@@ -2646,8 +2700,12 @@
             subData: finalSinhalaSrt
           });
 
-          alert(`✅ සාර්ථකයි! "${animeTitle} - Episode ${epNum}" සඳහා ස්වභාවික සිංහල උපසිරැසි (Sinhala Subtitles) සාදා සම්බන්ධ කළා!`);
-          fileInput.value = '';
+          if (!isAutoTrigger) {
+            alert(`✅ සාර්ථකයි! "${animeTitle} - Episode ${epNum}" සඳහා ස්වභාවික සිංහල උපසිරැසි (Sinhala Subtitles) සාදා සම්බන්ධ කළා!`);
+            fileInput.value = '';
+          } else {
+            alert(`✅ Episode ${epNum} Published & Auto-Translated into Sinhala Subtitles!`);
+          }
           await this.loadSubbedDB();
         } catch (err) {
           alert("AI Bot Notice: " + err.message);
@@ -2692,7 +2750,7 @@
         return cues;
       }
 
-async translateBatchWithGemini(apiKey, animeTitle, linesArray) {
+      async translateBatchWithGemini(apiKey, animeTitle, linesArray) {
         const numberedInput = linesArray.map((line, i) => `[${i}] ${line}`).join('\n');
 
         const systemPrompt = `You are an expert Sri Lankan anime fansubber translating subtitles for the anime "${animeTitle}" from English into natural, emotionally accurate, conversational Sinhala (ස්වභාවික කටවහර සිංහල).
