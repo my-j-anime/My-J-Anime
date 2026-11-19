@@ -21,7 +21,6 @@
     h1, h2, h3, .anime-font {
       font-family: 'Outfit', 'Noto Sans Sinhala', sans-serif;
     }
-    /* Prevent white browser autofill background on dark inputs */
     input:-webkit-autofill,
     input:-webkit-autofill:hover, 
     input:-webkit-autofill:focus {
@@ -53,8 +52,8 @@
     .sinhala-caption {
       font-family: 'Noto Sans Sinhala', sans-serif;
       text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.98), 0px 0px 12px rgba(0, 0, 0, 0.95);
-      background: rgba(6, 7, 13, 0.82);
-      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(6, 7, 13, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.16);
       padding: 6px 18px;
       border-radius: 10px;
       display: inline-block;
@@ -71,7 +70,7 @@
   <header class="sticky top-0 z-40 anime-glass border-b border-white/10 shadow-xl">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
       <!-- Brand Logo -->
-      <div onclick="app.goHome()" class="flex items-center gap-2.5 cursor-pointer group shrink-0">
+      <div onclick="app.resetSearchAndGoHome()" class="flex items-center gap-2.5 cursor-pointer group shrink-0">
         <div class="w-9 h-9 rounded-xl neon-gradient flex items-center justify-center shadow-lg shadow-pink-500/30 font-black text-white text-lg">
           J
         </div>
@@ -81,12 +80,20 @@
         </div>
       </div>
 
-      <!-- Search Bar (Autofill Disabled) -->
-      <div class="flex-1 max-w-md relative">
-        <input id="searchInput" name="anime_catalog_search_box" type="search" autocomplete="off" autocorrect="off" spellcheck="false"
-          placeholder="Search anime (e.g. Solo Leveling, Bleach)..." 
+      <!-- Working Search Bar with Live Search + Search Button + Clear Button -->
+      <div class="flex-1 max-w-md relative flex items-center">
+        <input id="searchInput" name="myjanime_global_search" type="text" autocomplete="off" autocorrect="off" spellcheck="false"
+          placeholder="Search any anime (e.g. Naruto, Attack on Titan)..." 
+          oninput="app.handleLiveSearch()"
           onkeydown="if(event.key==='Enter') app.searchAnime()"
-          class="w-full bg-[#0b0e18] border border-white/10 rounded-full px-4 py-2 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-pink-500 transition shadow-inner" />
+          class="w-full bg-[#0b0e18] border border-white/15 rounded-full pl-4 pr-20 py-2 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-pink-500 transition shadow-inner" />
+        
+        <button id="clearSearchBtn" onclick="app.resetSearchAndGoHome()" title="Clear search" class="hidden absolute right-10 text-slate-400 hover:text-white text-xs px-1.5 py-1">
+          ✕
+        </button>
+        <button onclick="app.searchAnime()" title="Search" class="absolute right-1.5 neon-gradient text-white rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold shadow">
+          🔍
+        </button>
       </div>
 
       <!-- Right Controls -->
@@ -115,6 +122,19 @@
     <!-- HOME PAGE -->
     <div id="viewHome" class="space-y-10">
       
+      <!-- Search Results Top Section (Appears immediately when searching!) -->
+      <section id="searchResultsSection" class="hidden space-y-4 bg-[#0c0f1d] border border-pink-500/30 rounded-3xl p-5 sm:p-6 shadow-2xl">
+        <div class="flex items-center justify-between gap-2">
+          <h2 id="searchResultsTitle" class="text-lg sm:text-xl font-extrabold text-white tracking-wide flex items-center gap-2">
+            <span>🔍 Search Results</span>
+          </h2>
+          <button onclick="app.resetSearchAndGoHome()" class="bg-white/10 hover:bg-white/20 text-slate-200 px-3.5 py-1.5 rounded-full text-xs font-bold transition">
+            ✕ Close Search
+          </button>
+        </div>
+        <div id="gridSearchResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+      </section>
+
       <!-- Featured Anime Hero Banner -->
       <div id="heroBanner" class="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl min-h-[280px] sm:min-h-[340px] flex items-end p-6 sm:p-10 bg-[#0d101d]">
         <div id="heroBg" class="absolute inset-0 bg-cover bg-center opacity-35 scale-105 transition-all duration-700"></div>
@@ -169,7 +189,7 @@
           </h2>
         </div>
         <div id="gridCatalog" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <p class="text-sm text-slate-400 col-span-full py-6 text-center">Connecting to AniList Network...</p>
+          <p class="text-sm text-slate-400 col-span-full py-6 text-center">Connecting to Anime Database...</p>
         </div>
       </section>
     </div>
@@ -199,9 +219,14 @@
     </div>
 
     <!-- DETAILS PAGE -->
-    <div id="viewDetails" class="hidden space-y-8">
-      <div class="text-xs text-slate-400 flex items-center gap-2">
-        <span onclick="app.goHome()" class="cursor-pointer hover:text-pink-400 transition">Home</span> › <span id="detCrumb" class="text-slate-200 font-medium">Anime Details</span>
+    <div id="viewDetails" class="hidden space-y-6">
+      <div class="flex items-center justify-between gap-4">
+        <button onclick="app.goHome()" class="bg-white/5 hover:bg-pink-600/20 border border-white/10 hover:border-pink-500/40 text-slate-200 hover:text-pink-300 px-4 py-2 rounded-full text-xs font-bold transition flex items-center gap-1.5">
+          <span>←</span> <span>Back to Home</span>
+        </button>
+        <div class="text-xs text-slate-400 hidden sm:flex items-center gap-2">
+          <span onclick="app.goHome()" class="cursor-pointer hover:text-pink-400 transition">Home</span> › <span id="detCrumb" class="text-slate-200 font-medium">Anime Details</span>
+        </div>
       </div>
 
       <div class="anime-glass rounded-3xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-4 gap-8 relative overflow-hidden shadow-2xl">
@@ -248,14 +273,34 @@
     </div>
 
     <!-- WATCH PLAYER PAGE -->
-    <div id="viewWatch" class="hidden space-y-6">
-      <div class="text-xs text-slate-400 flex items-center gap-2">
-        <span onclick="app.goHome()" class="cursor-pointer hover:text-pink-400 transition">Home</span> › <span onclick="app.openDetails()" class="cursor-pointer hover:text-pink-400 transition" id="watchCrumbAnime">Anime</span> › <span id="watchCrumbEp" class="text-slate-200 font-medium">Episode 1</span>
+    <div id="viewWatch" class="hidden space-y-5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <button onclick="app.openDetails()" class="bg-white/5 hover:bg-pink-600/20 border border-white/10 hover:border-pink-500/40 text-slate-200 hover:text-pink-300 px-4 py-2 rounded-full text-xs font-bold transition flex items-center gap-1.5">
+            <span>←</span> <span>Back to Anime</span>
+          </button>
+          <button onclick="app.goHome()" class="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white px-3.5 py-2 rounded-full text-xs font-semibold transition">
+            🏠 Home
+          </button>
+        </div>
+
+        <div class="text-xs text-slate-400 hidden md:flex items-center gap-2">
+          <span onclick="app.goHome()" class="cursor-pointer hover:text-pink-400 transition">Home</span> › <span onclick="app.openDetails()" class="cursor-pointer hover:text-pink-400 transition" id="watchCrumbAnime">Anime</span> › <span id="watchCrumbEp" class="text-slate-200 font-medium">Episode 1</span>
+        </div>
+
+        <button id="nextEpBtn" onclick="app.playNextEp()" class="hidden bg-violet-600/25 hover:bg-violet-600 border border-violet-500/40 text-violet-200 hover:text-white px-4 py-2 rounded-full text-xs font-bold transition">
+          Next Episode →
+        </button>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-4">
-          <div id="playerContainer" class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/15 shadow-2xl group">
+          <div id="playerContainer" class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-pink-500/25 shadow-2xl group">
+            <div class="pointer-events-none absolute top-3 left-3 z-20 flex items-center gap-1.5 bg-black/65 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-full opacity-80">
+              <span class="w-2 h-2 rounded-full bg-pink-500"></span>
+              <span class="text-[10px] font-black tracking-wider text-white">MY J ANIME PLAYER</span>
+            </div>
+
             <video id="nativeVideo" class="w-full h-full object-contain bg-black hidden" controls playsinline preload="metadata"></video>
             <iframe id="mainPlayer" class="w-full h-full border-0" allowfullscreen allow="autoplay; encrypted-media; fullscreen"></iframe>
             
@@ -267,17 +312,20 @@
           <div id="iframeSyncBar" class="hidden anime-glass rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs border border-pink-500/30">
             <div class="flex items-center gap-2">
               <button id="subTimerBtn" onclick="app.toggleIframeTimer()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-full transition">
-                ▶ Start Sub Sync
+                ▶ Start Sinhala Sub Sync
               </button>
               <button onclick="app.resetIframeTimer()" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full">↺ Reset</button>
               <span id="timerDisplay" class="font-mono text-pink-300 font-bold px-2">00:00</span>
             </div>
-            <div class="text-[11px] text-slate-400">Click "Start Sub Sync" when video starts playing</div>
+            <div class="text-[11px] text-emerald-300 font-medium">✓ Sinhala Subtitle Ready — Press Start when video begins</div>
           </div>
 
           <div class="anime-glass rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div class="flex items-center gap-2 font-bold text-pink-400 text-sm" id="watchEpHeading">Episode 1</div>
             <div class="flex flex-wrap items-center gap-2">
+              <button id="adShieldBtn" onclick="app.toggleAdShield()" title="Blocks pop-ups & redirects inside iframe" class="bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold px-3 py-1.5 rounded-full transition">
+                🛡 Ad-Shield: OFF
+              </button>
               <button id="ccToggleBtn" onclick="app.toggleCC()" class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold px-3.5 py-1.5 rounded-full transition">
                 CC: ON
               </button>
@@ -315,7 +363,7 @@
       <div class="flex flex-wrap justify-between items-center gap-4 border-b border-white/10 pb-4">
         <div>
           <h2 class="text-xl font-extrabold text-white">Owner Studio Dashboard</h2>
-          <p class="text-xs text-slate-400 mt-0.5">Publish single episodes, bulk-publish entire seasons, or manage/delete existing anime</p>
+          <p class="text-xs text-slate-400 mt-0.5">Publish seasons, add Sinhala subtitles later, or delete existing anime</p>
         </div>
         <button onclick="app.goHome()" class="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full text-xs font-semibold transition">← Exit Studio</button>
       </div>
@@ -323,7 +371,6 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Left Column: Single & Bulk Season Publisher -->
         <div class="anime-glass rounded-3xl p-6 space-y-4 shadow-xl h-fit">
-          <!-- Mode Tabs -->
           <div class="flex items-center gap-2 bg-[#06070d] p-1 rounded-xl border border-white/10">
             <button id="tabSingleBtn" onclick="app.switchStudioTab('single')" class="flex-1 py-2 rounded-lg text-xs font-bold neon-gradient text-white transition">
               + Single Episode
@@ -333,11 +380,10 @@
             </button>
           </div>
 
-          <!-- Series Search -->
           <div>
             <label class="block text-xs font-semibold text-slate-400 mb-1">Step 1: Search Anime Series</label>
             <div class="flex gap-2">
-              <input id="studioQuery" type="text" autocomplete="off" placeholder="Type anime name..." class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
+              <input id="studioQuery" type="text" autocomplete="off" onkeydown="if(event.key==='Enter') app.studioSearch()" placeholder="Type anime name..." class="w-full bg-[#06070d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500" />
               <button onclick="app.studioSearch()" class="neon-gradient font-bold px-5 py-2.5 rounded-xl text-xs transition">Search</button>
             </div>
             <div id="studioResults" class="mt-2 space-y-1.5 max-h-40 overflow-y-auto pr-1"></div>
@@ -365,7 +411,7 @@
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-emerald-400 mb-1">Sinhala Subtitle File (.SRT or .ASS)</label>
+              <label class="block text-xs font-semibold text-emerald-400 mb-1">Sinhala Subtitle File (.SRT or .ASS - Optional now, can add later)</label>
               <input id="pubSubFile" type="file" accept=".srt,.ass" class="w-full bg-[#06070d] border border-emerald-500/30 rounded-xl px-3 py-2 text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500" />
             </div>
 
@@ -374,7 +420,7 @@
             </button>
           </div>
 
-          <!-- BULK SEASON PANEL (PUBLISH ALL EPISODES AT ONCE) -->
+          <!-- BULK SEASON PANEL -->
           <div id="panelBulkPublish" class="hidden space-y-4">
             <div class="grid grid-cols-2 gap-3">
               <div>
@@ -390,7 +436,6 @@
               </div>
             </div>
 
-            <!-- Quick Paste All Links Box -->
             <div class="bg-[#06070d] border border-white/10 rounded-xl p-3 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="text-[11px] font-bold text-pink-300">⚡ Quick Paste All Season Links (1 Link per line)</span>
@@ -399,7 +444,6 @@
               <textarea id="bulkPasteBox" rows="3" placeholder="Paste Episode 1 link on line 1&#10;Episode 2 link on line 2&#10;Episode 3 link on line 3..." class="w-full bg-[#0b0e18] border border-white/10 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500"></textarea>
             </div>
 
-            <!-- Individual Episode Rows inside Season -->
             <div id="bulkRowsContainer" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
 
             <button id="bulkPublishBtn" onclick="app.publishBulkSeason()" class="w-full neon-gradient font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-pink-500/25">
@@ -408,26 +452,27 @@
           </div>
         </div>
 
-        <!-- Right Column: Viewer Requests & Manage/Delete Published Anime -->
+        <!-- Right Column: Viewer Requests & Manage/Add Subtitles Later/Delete Published Anime -->
         <div class="space-y-6">
-          <!-- Viewer Requests Inbox -->
           <div class="anime-glass rounded-3xl p-6 space-y-4 shadow-xl">
             <div class="flex items-center justify-between">
               <h3 class="text-sm font-bold text-violet-400 uppercase tracking-wider">2. Viewer Requests (One-Click Bulk Setup)</h3>
               <button onclick="app.loadRequests()" class="text-xs text-slate-400 hover:text-white">↻ Refresh</button>
             </div>
-            <div id="requestsList" class="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
+            <div id="requestsList" class="space-y-2.5 max-h-[260px] overflow-y-auto pr-1">
               <p class="text-xs text-slate-400">Loading requests...</p>
             </div>
           </div>
 
-          <!-- Manage / Delete Published Anime Collections -->
-          <div class="anime-glass rounded-3xl p-6 space-y-4 shadow-xl border border-rose-500/20">
+          <div class="anime-glass rounded-3xl p-6 space-y-4 shadow-xl border border-emerald-500/20">
             <div class="flex items-center justify-between">
-              <h3 class="text-sm font-bold text-rose-400 uppercase tracking-wider">3. Manage / Delete Published Anime</h3>
+              <div>
+                <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wider">3. Add Subtitles Later / Delete Anime</h3>
+                <p class="text-[11px] text-slate-400">Click "+ Sub" on any episode below to upload Sinhala subtitles anytime</p>
+              </div>
               <span class="text-[11px] text-slate-400" id="studioColCount">0 Series</span>
             </div>
-            <div id="studioManageList" class="space-y-2.5 max-h-[320px] overflow-y-auto pr-1">
+            <div id="studioManageList" class="space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
               <p class="text-xs text-slate-400">Loading published collections...</p>
             </div>
           </div>
@@ -436,7 +481,8 @@
     </div>
   </main>
 
-  <!-- Footer -->
+  <input type="file" id="laterSubFileInput" accept=".srt,.ass" class="hidden" onchange="app.handleLaterSubUpload(event)" />
+
   <footer class="border-t border-white/10 bg-[#040509] py-6 mt-12 text-center text-xs text-slate-500">
     <p>© 2026 MY J ANIME. Sinhala Anime Streaming Community.</p>
   </footer>
@@ -510,7 +556,7 @@
       onAuthStateChanged, 
       signOut 
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc, updateDoc, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const fbCfg = {
       apiKey: "AIzaSyDiCIxkg8RP0lfJgafuP0f4ZkFZ0jy5UmE",
@@ -538,6 +584,7 @@
     class AnishiftCore {
       constructor() {
         this.selectedAnime = null;
+        this.currentEpNum = 1;
         this.currentUser = null;
         this.userHistory = [];
         this.subMap = {};
@@ -547,6 +594,9 @@
         this.subOffset = 0;
         this.fontSizeIdx = 1;
         this.hls = null;
+        this.adShieldOn = false;
+        this.pendingSubDocId = null;
+        this.searchDebounceTimer = null;
         
         this.iframeTime = 0;
         this.iframeRunning = false;
@@ -812,6 +862,24 @@
         }
       }
 
+      toggleAdShield() {
+        this.adShieldOn = !this.adShieldOn;
+        const btn = document.getElementById('adShieldBtn');
+        const iframe = document.getElementById('mainPlayer');
+        const currentSrc = iframe.src;
+
+        if (this.adShieldOn) {
+          btn.textContent = '🛡 Ad-Shield: ON';
+          btn.className = 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold px-3 py-1.5 rounded-full transition';
+          iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+        } else {
+          btn.textContent = '🛡 Ad-Shield: OFF';
+          btn.className = 'bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold px-3 py-1.5 rounded-full transition';
+          iframe.removeAttribute('sandbox');
+        }
+        if (currentSrc) iframe.src = currentSrc;
+      }
+
       toggleCC() {
         this.ccEnabled = !this.ccEnabled;
         const btn = document.getElementById('ccToggleBtn');
@@ -860,7 +928,7 @@
         this.iframeRunning = false;
         this.iframeTime = 0;
         document.getElementById('timerDisplay').textContent = '00:00';
-        document.getElementById('subTimerBtn').textContent = '▶ Start Sub Sync';
+        document.getElementById('subTimerBtn').textContent = '▶ Start Sinhala Sub Sync';
         document.getElementById('subTimerBtn').className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-full transition';
         document.getElementById('captionText').classList.add('hidden');
       }
@@ -871,39 +939,68 @@
         const reader = new FileReader();
         reader.onload = (e) => {
           this.activeSubs = this.parseSubtitles(e.target.result);
+          if (this.activeSubs.length > 0 && !document.getElementById('mainPlayer').classList.contains('hidden')) {
+            document.getElementById('iframeSyncBar').classList.remove('hidden');
+          }
           alert(`Loaded ${this.activeSubs.length} Sinhala subtitle lines!`);
         };
         reader.readAsText(file);
       }
 
-      async queryAniList(query, variables = {}) {
+      // Dual-Engine Anime Fetcher (AniList Primary + Jikan MyAnimeList Fallback)
+      async fetchAnimeList(searchTerm = '') {
+        // 1. Try AniList GraphQL
         try {
+          const query = searchTerm
+            ? `query ($s: String) { Page(page: 1, perPage: 24) { media(type: ANIME, search: $s, isAdult: false) { id title { romaji english } bannerImage coverImage { extraLarge large } episodes seasonYear format averageScore description } } }`
+            : `query { Page(page: 1, perPage: 24) { media(type: ANIME, sort: [TRENDING_DESC], isAdult: false) { id title { romaji english } bannerImage coverImage { extraLarge large } episodes seasonYear format averageScore description } } }`;
+          
           const res = await fetch('https://graphql.anilist.co', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ query, variables })
+            body: JSON.stringify({ query, variables: searchTerm ? { s: searchTerm } : {} })
           });
           const json = await res.json();
-          if (json?.data) return json.data;
+          if (json?.data?.Page?.media?.length) {
+            return json.data.Page.media;
+          }
         } catch (e) {}
 
+        // 2. Fallback to Jikan API (MyAnimeList) so Search ALWAYS works 100%
         try {
-          const res = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://graphql.anilist.co'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ query, variables })
-          });
+          const url = searchTerm
+            ? `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(searchTerm)}&limit=24&sfw=true`
+            : `https://api.jikan.moe/v4/top/anime?filter=airing&limit=24`;
+          const res = await fetch(url);
           const json = await res.json();
-          return json.data;
-        } catch (e) { return null; }
+          if (json?.data?.length) {
+            return json.data.map(item => ({
+              id: item.mal_id,
+              title: {
+                english: item.title_english || item.title,
+                romaji: item.title
+              },
+              bannerImage: item.trailer?.images?.maximum_image_url || item.images?.jpg?.large_image_url,
+              coverImage: {
+                extraLarge: item.images?.jpg?.large_image_url || '',
+                large: item.images?.jpg?.large_image_url || item.images?.jpg?.image_url || ''
+              },
+              episodes: item.episodes,
+              seasonYear: item.year || (item.aired?.prop?.from?.year) || '2026',
+              format: item.type || 'TV',
+              averageScore: item.score ? Math.round(item.score * 10) : 85,
+              description: item.synopsis || 'No description available.'
+            }));
+          }
+        } catch (e) {}
+
+        return [];
       }
 
       async initCatalog() {
         await this.loadSubbedDB();
-        const q = `query { Page(page: 1, perPage: 24) { media(type: ANIME, sort: [TRENDING_DESC], isAdult: false) { id title { romaji english } bannerImage coverImage { extraLarge large } episodes seasonYear format averageScore description } } }`;
-        const data = await this.queryAniList(q);
-        if (data?.Page?.media?.length) {
-          const list = data.Page.media;
+        const list = await this.fetchAnimeList('');
+        if (list.length) {
           this.setupHero(list[0]);
           this.renderCards(list, document.getElementById('gridCatalog'));
         }
@@ -919,19 +1016,49 @@
         document.getElementById('heroActionBtn').onclick = () => this.selectAnime(encoded);
       }
 
+      handleLiveSearch() {
+        const term = document.getElementById('searchInput').value.trim();
+        const clearBtn = document.getElementById('clearSearchBtn');
+        if (term.length > 0) {
+          clearBtn.classList.remove('hidden');
+        } else {
+          clearBtn.classList.add('hidden');
+          document.getElementById('searchResultsSection').classList.add('hidden');
+          return;
+        }
+
+        clearTimeout(this.searchDebounceTimer);
+        this.searchDebounceTimer = setTimeout(() => {
+          if (term.length >= 2) this.searchAnime();
+        }, 450);
+      }
+
       async searchAnime() {
         const term = document.getElementById('searchInput').value.trim();
-        if (!term) return this.initCatalog();
-        this.goHome();
-        document.getElementById('catalogTitle').textContent = `🔍 Search Results: "${term}"`;
-        const container = document.getElementById('gridCatalog');
-        container.innerHTML = `<p class="text-sm text-slate-400 col-span-full py-4 text-center">Searching...</p>`;
+        if (!term) return this.resetSearchAndGoHome();
 
-        const q = `query ($s: String) { Page(page: 1, perPage: 24) { media(type: ANIME, search: $s, isAdult: false) { id title { romaji english } coverImage { large } episodes seasonYear format averageScore description } } }`;
-        const data = await this.queryAniList(q, { s: term });
-        if (data?.Page?.media) {
-          this.renderCards(data.Page.media, container);
+        this.goHome();
+        const sec = document.getElementById('searchResultsSection');
+        const titleEl = document.getElementById('searchResultsTitle');
+        const container = document.getElementById('gridSearchResults');
+
+        sec.classList.remove('hidden');
+        titleEl.innerHTML = `🔍 Search Results for "<span class="text-pink-400">${term}</span>"`;
+        container.innerHTML = `<p class="text-sm text-slate-400 col-span-full py-6 text-center animate-pulse">Searching global anime database for "${term}"...</p>`;
+
+        const results = await this.fetchAnimeList(term);
+        if (results.length > 0) {
+          this.renderCards(results, container);
+        } else {
+          container.innerHTML = `<p class="text-sm text-rose-400 col-span-full py-6 text-center">No anime found matching "${term}". Try checking the spelling.</p>`;
         }
+      }
+
+      resetSearchAndGoHome() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('clearSearchBtn').classList.add('hidden');
+        document.getElementById('searchResultsSection').classList.add('hidden');
+        this.goHome();
       }
 
       async loadSubbedDB() {
@@ -980,7 +1107,6 @@
         }
       }
 
-      // Render Manage / Delete Published Anime List in Owner Studio
       renderStudioManageList(collections) {
         const listEl = document.getElementById('studioManageList');
         const countEl = document.getElementById('studioColCount');
@@ -994,12 +1120,23 @@
 
         listEl.innerHTML = collections.map(col => {
           const safeTitle = col.title.english.replace(/'/g, "\\'");
-          const epBadges = col.episodesList.map(ep => `
-            <span class="inline-flex items-center gap-1 bg-white/5 border border-white/10 px-2 py-0.5 rounded text-[10px] text-slate-200">
-              Ep ${ep.epNum}
-              <button onclick="app.deleteSingleEpisode('${ep.docId}', '${safeTitle}', ${ep.epNum})" title="Delete Ep ${ep.epNum}" class="text-rose-400 hover:text-rose-300 font-bold ml-0.5">×</button>
-            </span>
-          `).join('');
+          const epBadges = col.episodesList.map(ep => {
+            const hasSub = Boolean(ep.subData && ep.subData.trim().length > 0);
+            const subBtnClass = hasSub 
+              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' 
+              : 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+            const subBtnText = hasSub ? '✓ Sub' : '+ Sub';
+
+            return `
+              <div class="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-1 rounded-lg text-[10px] text-slate-200">
+                <span class="font-bold">Ep ${ep.epNum}</span>
+                <button onclick="app.triggerLaterSubUpload('${ep.docId}')" title="Upload/Replace Sinhala Subtitle for Ep ${ep.epNum}" class="border px-1.5 py-0.5 rounded font-bold transition ${subBtnClass}">
+                  ${subBtnText}
+                </button>
+                <button onclick="app.deleteSingleEpisode('${ep.docId}', '${safeTitle}', ${ep.epNum})" title="Delete Ep ${ep.epNum}" class="text-rose-400 hover:text-rose-300 font-bold">×</button>
+              </div>
+            `;
+          }).join('');
 
           return `
             <div class="bg-[#0b0e18] border border-white/10 p-3 rounded-2xl space-y-2">
@@ -1015,12 +1152,36 @@
                   🗑 Delete All
                 </button>
               </div>
-              <div class="flex flex-wrap gap-1 pt-1 border-t border-white/5">
+              <div class="flex flex-wrap gap-1.5 pt-1.5 border-t border-white/5">
                 ${epBadges}
               </div>
             </div>
           `;
         }).join('');
+      }
+
+      triggerLaterSubUpload(docId) {
+        this.pendingSubDocId = docId;
+        const input = document.getElementById('laterSubFileInput');
+        input.value = '';
+        input.click();
+      }
+
+      async handleLaterSubUpload(event) {
+        const file = event.target.files[0];
+        if (!file || !this.pendingSubDocId || !database) return;
+
+        try {
+          const subRawText = await file.text();
+          await updateDoc(doc(database, "sinhala_episodes", this.pendingSubDocId), {
+            subData: subRawText
+          });
+          alert("සිංහල උපසිරැසි (Sinhala Subtitle) සාර්ථකව Episode එකට සම්බන්ධ කළා!");
+          this.pendingSubDocId = null;
+          await this.loadSubbedDB();
+        } catch (err) {
+          alert("Subtitle upload error: " + err.message);
+        }
       }
 
       async deleteSingleEpisode(docId, animeTitle, epNum) {
@@ -1160,11 +1321,33 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
+      playNextEp() {
+        const colData = this.animeCollections[String(this.selectedAnime?.id)];
+        if (!colData) return;
+        const eps = colData.episodesList;
+        const idx = eps.findIndex(e => Number(e.epNum) === Number(this.currentEpNum));
+        if (idx !== -1 && idx + 1 < eps.length) {
+          this.playEp(eps[idx + 1].epNum);
+        }
+      }
+
       playEp(epNum) {
         this.resetIframeTimer();
+        this.currentEpNum = Number(epNum);
         document.getElementById('watchCrumbEp').textContent = `Episode ${epNum}`;
         const name = this.selectedAnime.title.english || this.selectedAnime.title.romaji;
         document.getElementById('watchEpHeading').textContent = `${name} — Episode ${epNum}`;
+
+        const colData = this.animeCollections[String(this.selectedAnime?.id)];
+        const nextBtn = document.getElementById('nextEpBtn');
+        if (colData) {
+          const idx = colData.episodesList.findIndex(e => Number(e.epNum) === Number(epNum));
+          if (idx !== -1 && idx + 1 < colData.episodesList.length) {
+            nextBtn.classList.remove('hidden');
+          } else {
+            nextBtn.classList.add('hidden');
+          }
+        }
 
         document.querySelectorAll('#episodeButtonsList button').forEach(b => b.classList.remove('neon-gradient', 'border-pink-400'));
         const activeBtn = document.getElementById(`epBtn_${epNum}`);
@@ -1275,7 +1458,6 @@
         }
       }
 
-      // Studio Tabs: Single vs Bulk Season Publish
       switchStudioTab(mode) {
         const singlePanel = document.getElementById('panelSinglePublish');
         const bulkPanel = document.getElementById('panelBulkPublish');
@@ -1324,7 +1506,6 @@
           .filter(l => l.length > 0);
         if (!lines.length) return alert("Paste your episode links (one per line) first!");
 
-        // Automatically adjust row count if pasted links exceed current rows
         const currentInputs = document.querySelectorAll('.bulk-url-input');
         if (lines.length > currentInputs.length) {
           document.getElementById('bulkTotalEps').value = lines.length;
@@ -1457,9 +1638,9 @@
       async studioSearch() {
         const queryVal = document.getElementById('studioQuery').value.trim();
         if (!queryVal) return;
-        const data = await this.queryAniList(`query ($s: String) { Page(perPage: 5) { media(type: ANIME, search: $s) { id title { english romaji } coverImage { large } episodes } } }`, { s: queryVal });
-        if (data?.Page?.media) {
-          document.getElementById('studioResults').innerHTML = data.Page.media.map(m => {
+        const list = await this.fetchAnimeList(queryVal);
+        if (list.length) {
+          document.getElementById('studioResults').innerHTML = list.slice(0, 6).map(m => {
             const t = m.title.english || m.title.romaji;
             return `<div onclick="app.studioPick(${m.id}, '${t.replace(/'/g, "\\'")}', '${m.coverImage.large}', ${m.episodes || 12})" class="cursor-pointer bg-[#0b0e18] border border-white/10 p-2.5 rounded-xl text-xs hover:bg-pink-600/30 transition flex justify-between"><span>${t}</span><span class="text-slate-400">${m.episodes || '?'} Eps</span></div>`;
           }).join('');
