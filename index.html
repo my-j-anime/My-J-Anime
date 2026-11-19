@@ -2503,12 +2503,14 @@
         sel.innerHTML = opts;
       }
 
-    async autoFetchEnglishSubtitle(animeTitle, epNum) {
+  async autoFetchEnglishSubtitle(animeTitle, epNum) {
         const subdlKey = document.getElementById('subdlApiKeyInput')?.value.trim() || localStorage.getItem('myjanime_subdl_key');
-        if (!subdlKey) return null;
+        if (!subdlKey) {
+          console.warn("No Subdl API key found.");
+          return null;
+        }
 
         try {
-          // Detect Season number from title (e.g., "Season 2", "2nd Season", "S2") and clean the base title
           let seasonNum = 1;
           let cleanTitle = animeTitle;
 
@@ -2518,32 +2520,58 @@
             cleanTitle = animeTitle.replace(/[:\-–]?\s*(?:season\s*\d+|\d+(?:nd|rd|th)\s*season|\bs\d+\b)/i, '').trim();
           }
 
-          const searchUrl = `https://api.subdl.com/api/v1/subtitles?api_key=${encodeURIComponent(subdlKey)}&film_name=${encodeURIComponent(cleanTitle)}&languages=EN&season_number=${seasonNum}&episode_number=${epNum}&type=tv`;
+          // 1. Search without strict episode_number first so season packs & untagged files also appear
+          const searchUrl = `https://api.subdl.com/api/v1/subtitles?api_key=${encodeURIComponent(subdlKey)}&film_name=${encodeURIComponent(cleanTitle)}&languages=EN&season_number=${seasonNum}&type=tv`;
           const res = await fetch(searchUrl);
           const data = await res.json();
 
-          if (data?.status && data?.subtitles?.length > 0) {
-            const subItem = data.subtitles[0];
-            const zipDownloadUrl = `https://dl.subdl.com${subItem.url}`;
-
-            // Download zip via CORS proxy to extract .srt/.ass inside browser
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(zipDownloadUrl)}`;
-            const zipRes = await fetch(proxyUrl);
-            if (!zipRes.ok) return null;
-
-            const blob = await zipRes.blob();
-            const zip = await JSZip.loadAsync(blob);
-
-            for (const filename of Object.keys(zip.files)) {
-              if (filename.toLowerCase().endsWith('.srt') || filename.toLowerCase().endsWith('.ass')) {
-                return await zip.files[filename].async('string');
-              }
-            }
+          if (!data?.status || !data?.subtitles?.length) {
+            console.warn("Subdl returned no subtitles:", data);
+            return null;
           }
+
+          // 2. Find matching episode by episode_number OR filename pattern (S02E01, E01, - 01)
+          const epPad = String(epNum).padStart(2, '0');
+          const sPad = String(seasonNum).padStart(2, '0');
+          const epRegex = new RegExp(`(?:S${sPad}E${epPad}|E${epPad}|\\b${epPad}\\b)`, 'i');
+
+          let matchedSub = data.subtitles.find(s => Number(s.episode_number) === Number(epNum))
+                        || data.subtitles.find(s => epRegex.test(s.release_name || s.name || ''))
+                        || data.subtitles[0];
+
+          const zipDownloadUrl = `https://dl.subdl.com${matchedSub.url}`;
+
+          // 3. Try multiple CORS proxies to download the ZIP
+          const proxies = [
+            `https://api.allorigins.win/raw?url=${encodeURIComponent(zipDownloadUrl)}`,
+            `https://corsproxy.io/?${encodeURIComponent(zipDownloadUrl)}`
+          ];
+
+          let blob = null;
+          for (const pUrl of proxies) {
+            try {
+              const zipRes = await fetch(pUrl);
+              if (zipRes.ok) {
+                blob = await zipRes.blob();
+                if (blob && blob.size > 100) break;
+              }
+            } catch (err) {}
+          }
+
+          if (!blob) return null;
+
+          const zip = await JSZip.loadAsync(blob);
+          const subFiles = Object.keys(zip.files).filter(f => f.toLowerCase().endsWith('.srt') || f.toLowerCase().endsWith('.ass'));
+          if (!subFiles.length) return null;
+
+          // If it's a multi-episode zip pack, pick the matching episode file inside the zip
+          const targetFile = subFiles.find(f => epRegex.test(f)) || subFiles[0];
+          return await zip.files[targetFile].async('string');
+
         } catch (e) {
-          console.warn("Subdl fetch warning:", e);
+          console.warn("Subdl fetch error:", e);
+          return null;
         }
-        return null;
       }
 
       async runAiAutoSubtitleBot() {
