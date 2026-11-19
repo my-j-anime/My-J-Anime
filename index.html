@@ -666,7 +666,51 @@
               + Publish Episode
             </button>
           </div>
+              <!-- 🤖 BUILT-IN AI AUTO-SUBTITLE BOT PANEL -->
+          <div class="bg-gradient-to-br from-purple-950/40 via-[#0b0c10] to-sky-950/30 border border-purple-500/40 rounded-xl p-4 space-y-3 mt-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-base">🤖</span>
+                <h4 class="text-xs font-black uppercase tracking-wider text-purple-300">AI Anime Subtitle Bot (Natural Sinhala)</h4>
+              </div>
+              <span id="aiBotStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Ready</span>
+            </div>
 
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 mb-1">1. Free Gemini API Key (Saved in your browser)</label>
+              <div class="flex gap-1.5">
+                <input id="geminiApiKeyInput" type="password" placeholder="AIzaSy..." class="flex-1 bg-[#151822] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-purple-400" />
+                <button onclick="app.saveGeminiKey()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">Save Key</button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 mb-1">2. Select Published Episode ID</label>
+                <select id="aiTargetDocSelect" class="w-full bg-[#151822] border border-white/10 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-sky-400">
+                  <option value="">-- Select Episode to Sub --</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 mb-1">3. Upload English .SRT / .ASS (Optional)</label>
+                <input id="aiEngSubFile" type="file" accept=".srt,.ass" class="w-full bg-[#151822] border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-slate-300" />
+              </div>
+            </div>
+
+            <div id="aiBotProgressBox" class="hidden space-y-1.5 bg-black/50 p-2.5 rounded-lg border border-white/5">
+              <div class="flex justify-between text-[11px] font-bold">
+                <span id="aiBotProgressText" class="text-sky-300">Initializing AI Translator...</span>
+                <span id="aiBotPercent" class="text-pink-400">0%</span>
+              </div>
+              <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                <div id="aiBotProgressBar" class="brand-accent h-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <button id="runAiBotBtn" onclick="app.runAiAutoSubtitleBot()" class="w-full brand-accent text-white font-extrabold py-2.5 rounded-lg text-xs shadow-lg transition flex items-center justify-center gap-2">
+              <span>✨</span> <span>Auto-Find / Translate & Attach Sinhala Subtitles</span>
+            </button>
+          </div>
           <div id="panelBulkPublish" class="hidden space-y-4">
             <div class="grid grid-cols-2 gap-3">
               <div>
@@ -1802,6 +1846,7 @@
           }
 
           this.renderStudioManageList(collections);
+        this.populateAiEpisodeDropdown(collections);
         } catch (e) {
           grid.innerHTML = `<p class="text-xs text-slate-400 col-span-full py-2">No active subbed titles found.</p>`;
         }
@@ -2370,7 +2415,7 @@
         this.generateBulkRows();
       }
 
-      async publishEp() {
+     async publishEp() {
         if (!database) return alert("Database offline.");
         const id = document.getElementById('pubId').value;
         const animeTitle = document.getElementById('pubTitle').value;
@@ -2410,6 +2455,207 @@
           btn.disabled = false;
           btn.textContent = "+ Publish Episode";
         }
+      }
+
+      // ==========================================
+      // 🤖 BUILT-IN AI AUTO-SUBTITLE BOT ENGINE
+      // ==========================================
+      saveGeminiKey() {
+        const key = document.getElementById('geminiApiKeyInput').value.trim();
+        if (!key) return alert("Please enter a valid Gemini API Key.");
+        localStorage.setItem('myjanime_gemini_key', key);
+        alert("Gemini API Key saved securely in your browser!");
+      }
+
+      populateAiEpisodeDropdown(collections) {
+        const savedKey = localStorage.getItem('myjanime_gemini_key');
+        const keyInput = document.getElementById('geminiApiKeyInput');
+        if (savedKey && keyInput) keyInput.value = savedKey;
+
+        const sel = document.getElementById('aiTargetDocSelect');
+        if (!sel) return;
+        let opts = `<option value="">-- Select Episode to Sub --</option>`;
+        collections.forEach(col => {
+          col.episodesList.forEach(ep => {
+            const statusIcon = (ep.subData && ep.subData.trim().length > 0) ? '✓ [Has Sub]' : '⚠ [No Sub]';
+            opts += `<option value="${ep.docId}" data-title="${col.title.english}" data-ep="${ep.epNum}">${col.title.english} — Ep ${ep.epNum} ${statusIcon}</option>`;
+          });
+        });
+        sel.innerHTML = opts;
+      }
+
+      async autoFetchEnglishSubtitle(animeTitle, epNum) {
+        try {
+          const query = encodeURIComponent(`${animeTitle} S01E${String(epNum).padStart(2, '0')}`);
+          const res = await fetch(`https://rest.opensubtitles.org/search/query-${query}/sublanguageid-eng`, {
+            headers: { 'X-User-Agent': 'TemporaryUserAgent' }
+          });
+          if (!res.ok) return null;
+          const list = await res.json();
+          if (list && list.length > 0 && list[0].SubDownloadLink) {
+            const gzUrl = list[0].SubDownloadLink.replace('.gz', '');
+            const subRes = await fetch(gzUrl);
+            if (subRes.ok) return await subRes.text();
+          }
+        } catch (e) {
+          console.warn("Auto-fetch fallback triggered:", e);
+        }
+        return null;
+      }
+
+      async runAiAutoSubtitleBot() {
+        const apiKey = document.getElementById('geminiApiKeyInput').value.trim() || localStorage.getItem('myjanime_gemini_key');
+        if (!apiKey) return alert("Please paste and save your Free Gemini API Key first!");
+
+        const sel = document.getElementById('aiTargetDocSelect');
+        const docId = sel.value;
+        if (!docId) return alert("Please select a Published Episode from the dropdown!");
+
+        const selectedOpt = sel.options[sel.selectedIndex];
+        const animeTitle = selectedOpt.dataset.title;
+        const epNum = selectedOpt.dataset.ep;
+
+        const fileInput = document.getElementById('aiEngSubFile');
+        const btn = document.getElementById('runAiBotBtn');
+        const progBox = document.getElementById('aiBotProgressBox');
+        const progText = document.getElementById('aiBotProgressText');
+        const progPercent = document.getElementById('aiBotPercent');
+        const progBar = document.getElementById('aiBotProgressBar');
+
+        btn.disabled = true;
+        progBox.classList.remove('hidden');
+        progBar.style.width = '10%';
+        progPercent.textContent = '10%';
+
+        try {
+          let rawEngText = "";
+          if (fileInput.files && fileInput.files[0]) {
+            progText.textContent = "Reading uploaded English subtitle file...";
+            rawEngText = await fileInput.files[0].text();
+          } else {
+            progText.textContent = `Searching English subtitles for ${animeTitle} Ep ${epNum}...`;
+            rawEngText = await this.autoFetchEnglishSubtitle(animeTitle, epNum);
+          }
+
+          if (!rawEngText) {
+            throw new Error("Could not auto-fetch English subtitles for this episode. Please select the English .SRT/.ASS file in Step 3 and click Translate!");
+          }
+
+          const parsedCues = this.parseSubtitlesForBot(rawEngText);
+          if (!parsedCues.length) throw new Error("No valid dialogue lines found in subtitle file.");
+
+          const BATCH_SIZE = 35;
+          const totalBatches = Math.ceil(parsedCues.length / BATCH_SIZE);
+          let translatedCues = [];
+
+          for (let b = 0; b < totalBatches; b++) {
+            const batch = parsedCues.slice(b * BATCH_SIZE, (b + 1) * BATCH_SIZE);
+            const pct = Math.min(95, Math.round(15 + ((b / totalBatches) * 80)));
+            progBar.style.width = `${pct}%`;
+            progPercent.textContent = `${pct}%`;
+            progText.textContent = `Translating natural Sinhala dialogue (Part ${b + 1} of ${totalBatches})...`;
+
+            const translatedLines = await this.translateBatchWithGemini(apiKey, animeTitle, batch.map(c => c.text));
+            batch.forEach((cue, idx) => {
+              translatedCues.push({
+                index: cue.index,
+                timecode: cue.timecode,
+                text: translatedLines[idx] || cue.text
+              });
+            });
+          }
+
+          const finalSinhalaSrt = translatedCues.map(c => `${c.index}\n${c.timecode}\n${c.text}`).join('\n\n');
+
+          progText.textContent = "Saving Sinhala subtitles to Episode...";
+          progBar.style.width = '100%';
+          progPercent.textContent = '100%';
+
+          await updateDoc(doc(database, "sinhala_episodes", docId), {
+            subData: finalSinhalaSrt
+          });
+
+          alert(`✅ සාර්ථකයි! "${animeTitle} - Episode ${epNum}" සඳහා ස්වභාවික සිංහල උපසිරැසි (Sinhala Subtitles) සාදා සම්බන්ධ කළා!`);
+          fileInput.value = '';
+          await this.loadSubbedDB();
+        } catch (err) {
+          alert("AI Bot Notice: " + err.message);
+        } finally {
+          btn.disabled = false;
+          setTimeout(() => progBox.classList.add('hidden'), 2500);
+        }
+      }
+
+      parseSubtitlesForBot(rawText) {
+        const cues = [];
+        const lines = rawText.replace(/\r\n/g, '\n').split('\n');
+
+        if (rawText.includes('[Events]') || rawText.includes('Dialogue:')) {
+          let counter = 1;
+          for (const line of lines) {
+            if (line.startsWith('Dialogue:')) {
+              const parts = line.split(',');
+              if (parts.length >= 10) {
+                const start = parts[1].trim().replace('.', ',');
+                const end = parts[2].trim().replace('.', ',');
+                const cleanText = parts.slice(9).join(',').replace(/\{[^}]*\}/g, '').replace(/\\N/g, ' ').trim();
+                if (cleanText) {
+                  cues.push({ index: counter++, timecode: `0${start}0 --> 0${end}0`, text: cleanText });
+                }
+              }
+            }
+          }
+        } else {
+          const blocks = rawText.trim().split(/\n\s*\n/);
+          let counter = 1;
+          for (const block of blocks) {
+            const bLines = block.split('\n');
+            const tIdx = bLines.findIndex(l => l.includes('-->'));
+            if (tIdx !== -1) {
+              const timecode = bLines[tIdx].trim();
+              const text = bLines.slice(tIdx + 1).join(' ').replace(/<[^>]*>/g, '').trim();
+              if (text) cues.push({ index: counter++, timecode, text });
+            }
+          }
+        }
+        return cues;
+      }
+
+      async translateBatchWithGemini(apiKey, animeTitle, linesArray) {
+        const numberedInput = linesArray.map((line, i) => `[${i}] ${line}`).join('\n');
+
+        const systemPrompt = `You are an expert Sri Lankan anime fansubber translating subtitles for the anime "${animeTitle}" from English into natural, emotionally accurate, conversational Sinhala (ස්වභාවික කටවහර සිංහල).
+STRICT RULES:
+1. Never translate word-for-word robotically. Translate the true meaning, emotion, humor, and tone as spoken naturally by Sri Lankan youth/anime fans.
+2. Keep character names, Japanese honorifics (-san, -kun, -chan, -sama, Senpai, Sensei), and special attack names natural in Sinhala script (e.g., සෙන්පායි, සෙන්සේ).
+3. Keep each line concise so viewers can read it quickly on screen.
+4. Maintain the EXACT line numbers [0], [1], [2]... in your output. Do not merge or skip lines. Output ONLY the translated numbered lines.`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ parts: [{ text: numberedInput }] }],
+            generationConfig: { temperature: 0.35 }
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data?.error?.message || "Gemini API request failed.");
+        }
+
+        const rawOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        const resultMap = {};
+        rawOutput.split('\n').forEach(row => {
+          const match = row.match(/^\[(\d+)\]\s*(.+)$/);
+          if (match) {
+            resultMap[Number(match[1])] = match[2].trim();
+          }
+        });
+
+        return linesArray.map((orig, idx) => resultMap[idx] || orig);
       }
     }
 
