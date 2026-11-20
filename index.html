@@ -503,7 +503,7 @@
 
           <div class="flex flex-wrap items-center gap-3 pt-2">
             <button id="watchNowBtn" onclick="app.startWatchSession()" class="hidden brand-accent text-white font-bold px-6 py-2.5 rounded-lg text-sm flex items-center gap-2 shadow-lg shadow-purple-500/30 transition">
-              ▶ Watch Episode 1
+              ▶ Watch Now
             </button>
             <button id="reqBtn" onclick="app.requestSub()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-2.5 rounded-lg text-sm flex items-center gap-2 transition shadow-lg">
               🔴 Request Sinhala Subtitle
@@ -596,7 +596,8 @@
           </div>
         </div>
 
-        <div class="space-y-4">
+        <!-- RIGHT SIDEBAR: SERIES EPISODES LIST -->
+        <div class="lg:col-span-1 space-y-4">
           <div class="panel-dark rounded-2xl p-4 space-y-3 shadow-lg">
             <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
               <span class="text-xs font-bold text-slate-200">Series Episodes</span>
@@ -889,6 +890,7 @@
         this.userHistory = [];
         this.subMap = {};
         this.animeCollections = {};
+        this.requestedAnimeIds = new Set();
         this.activeSubs = [];
         this.ccEnabled = true;
         this.subOffset = 0;
@@ -1139,6 +1141,7 @@
         const name = anime.title.english || anime.title.romaji;
         const requesterName = this.currentUser ? (this.currentUser.displayName || this.currentUser.email) : "Viewer";
 
+        this.requestedAnimeIds.add(String(anime.id));
         btnEl.disabled = true;
         btnEl.textContent = "✓ Requested";
         btnEl.className = "bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 text-[9px] font-bold px-2 py-0.5 rounded shadow cursor-not-allowed";
@@ -1150,6 +1153,7 @@
             posterUrl: anime.coverImage.large || '',
             totalEps: anime.episodes || 12,
             requestedBy: requesterName,
+            status: "pending",
             time: Date.now()
           });
         } catch (e) {}
@@ -2036,11 +2040,13 @@
         const colBox = document.getElementById('detCollectionBox');
         const colGrid = document.getElementById('detEpisodesGrid');
 
+        const isAlreadyRequested = this.requestedAnimeIds?.has(String(this.selectedAnime.id));
+
         if (colData && colData.episodesList.length > 0) {
           const eps = colData.episodesList;
           document.getElementById('detEps').textContent = `${eps.length} Published Eps`;
           watchBtn.classList.remove('hidden');
-          watchBtn.textContent = `▶ Watch Episode ${eps[0].epNum}`;
+          watchBtn.textContent = `▶ Watch Now (Ep ${eps[0].epNum})`;
           watchBtn.onclick = () => this.startWatchSession(eps[0].epNum);
           reqBtn.classList.add('hidden');
 
@@ -2051,19 +2057,40 @@
               <span>▶ Ep ${ep.epNum}</span>
             </button>
           `).join('');
+        } else if (isAlreadyRequested) {
+          const totalEps = this.selectedAnime.episodes || 12;
+          document.getElementById('detEps').textContent = `${totalEps} Eps (Season)`;
+          reqBtn.classList.add('hidden');
+          watchBtn.classList.remove('hidden');
+          watchBtn.textContent = "▶ Watch Now";
+          watchBtn.onclick = () => this.startWatchSession(1);
+
+          colBox.classList.remove('hidden');
+          document.getElementById('detCollectionCount').textContent = `${totalEps} Season Episodes`;
+          let slotsHtml = '';
+          for (let i = 1; i <= totalEps; i++) {
+            slotsHtml += `
+              <button onclick="app.startWatchSession(${i})" class="bg-[#0b0c12] hover:bg-purple-600/30 border border-amber-500/30 text-amber-300 font-bold py-2 px-2 rounded-lg text-[11px] transition flex flex-col items-center justify-center">
+                <span>Ep ${i}</span>
+                <span class="text-[9px] text-slate-400 font-normal">Upload Episode</span>
+              </button>
+            `;
+          }
+          colGrid.innerHTML = slotsHtml;
         } else {
           document.getElementById('detEps').textContent = this.selectedAnime.episodes ? `${this.selectedAnime.episodes} Eps` : 'Ongoing';
           watchBtn.classList.add('hidden');
           colBox.classList.add('hidden');
           reqBtn.classList.remove('hidden');
           reqBtn.disabled = false;
-          reqBtn.textContent = "🔴 Request Sinhala Subtitle";
+          reqBtn.textContent = "🔴 Request Anime / Sinhala Sub";
+          reqBtn.onclick = () => this.requestSub();
           reqBtn.className = "bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-2.5 rounded-lg text-sm flex items-center gap-2 transition shadow-lg";
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
-      startWatchSession(startEpNum = null) {
+      startWatchSession(startEpNum = 1) {
         document.getElementById('viewDetails').classList.add('hidden');
         document.getElementById('viewHistory').classList.add('hidden');
         document.getElementById('viewWatch').classList.remove('hidden');
@@ -2072,29 +2099,40 @@
 
         const colData = this.animeCollections[String(this.selectedAnime.id)];
         const publishedEps = colData ? colData.episodesList : [];
+        const totalSeasonEps = Math.max(
+          Number(this.selectedAnime.episodes) || 0,
+          publishedEps.length ? Math.max(...publishedEps.map(e => Number(e.epNum))) : 12
+        );
 
-        document.getElementById('watchEpCount').textContent = `${publishedEps.length} Episodes`;
+        document.getElementById('watchEpCount').textContent = `${publishedEps.length} / ${totalSeasonEps} Ready`;
 
         const listContainer = document.getElementById('episodeButtonsList');
-        if (publishedEps.length > 0) {
-          listContainer.innerHTML = publishedEps.map(ep => 
-            `<button id="epBtn_${ep.epNum}" onclick="app.playEp(${ep.epNum})" class="py-2 rounded-lg text-xs font-bold bg-[#0b0c12] hover:bg-purple-600 border border-white/10 transition shadow">${ep.epNum}</button>`
-          ).join('');
-          const epToPlay = startEpNum && publishedEps.some(e => Number(e.epNum) === Number(startEpNum)) ? Number(startEpNum) : Number(publishedEps[0].epNum);
-          this.playEp(epToPlay);
-        } else {
-          listContainer.innerHTML = `<p class="text-xs text-slate-400 col-span-full">No episodes uploaded yet.</p>`;
+        let btnsHtml = '';
+        for (let i = 1; i <= totalSeasonEps; i++) {
+          const isReady = publishedEps.some(e => Number(e.epNum) === i);
+          btnsHtml += `
+            <button id="epBtn_${i}" onclick="app.playEp(${i})" class="py-2 px-1 rounded-lg text-xs font-bold ${isReady ? 'bg-[#0b0c12] text-white border-white/15' : 'bg-[#0b0c12]/60 text-amber-300 border-amber-500/25'} hover:bg-purple-600 border transition shadow flex flex-col items-center">
+              <span>${i}</span>
+              ${!isReady ? `<span class="text-[8px] text-slate-400 font-normal leading-tight">Upload</span>` : ''}
+            </button>
+          `;
         }
+        listContainer.innerHTML = btnsHtml;
+
+        const epToPlay = Number(startEpNum) || (publishedEps[0] ? Number(publishedEps[0].epNum) : 1);
+        this.playEp(epToPlay);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
       playNextEp() {
         const colData = this.animeCollections[String(this.selectedAnime?.id)];
-        if (!colData) return;
-        const eps = colData.episodesList;
-        const idx = eps.findIndex(e => Number(e.epNum) === Number(this.currentEpNum));
-        if (idx !== -1 && idx + 1 < eps.length) {
-          this.playEp(eps[idx + 1].epNum);
+        const publishedEps = colData ? colData.episodesList : [];
+        const totalSeasonEps = Math.max(
+          Number(this.selectedAnime?.episodes) || 0,
+          publishedEps.length ? Math.max(...publishedEps.map(e => Number(e.epNum))) : 12
+        );
+        if (this.currentEpNum < totalSeasonEps) {
+          this.playEp(this.currentEpNum + 1);
         }
       }
 
@@ -2106,21 +2144,22 @@
         document.getElementById('watchEpHeading').textContent = `${name} — Episode ${epNum}`;
 
         const colData = this.animeCollections[String(this.selectedAnime?.id)];
+        const publishedEps = colData ? colData.episodesList : [];
         const nextBtn = document.getElementById('nextEpBtn');
-        if (colData) {
-          const idx = colData.episodesList.findIndex(e => Number(e.epNum) === Number(epNum));
-          if (idx !== -1 && idx + 1 < colData.episodesList.length) {
-            nextBtn.classList.remove('hidden');
-          } else {
-            nextBtn.classList.add('hidden');
-          }
+        const totalSeasonEps = Math.max(
+          Number(this.selectedAnime?.episodes) || 0,
+          publishedEps.length ? Math.max(...publishedEps.map(e => Number(e.epNum))) : 12
+        );
+
+        if (this.currentEpNum < totalSeasonEps) {
+          nextBtn.classList.remove('hidden');
+        } else {
+          nextBtn.classList.add('hidden');
         }
 
         document.querySelectorAll('#episodeButtonsList button').forEach(b => b.classList.remove('brand-accent', 'border-purple-400'));
         const activeBtn = document.getElementById(`epBtn_${epNum}`);
         if (activeBtn) activeBtn.classList.add('brand-accent', 'border-purple-400');
-
-        this.saveToHistory(this.selectedAnime, epNum);
 
         const custom = this.subMap[`${this.selectedAnime.id}_${epNum}`];
         const mountSlot = document.getElementById('iframeMountSlot');
@@ -2130,6 +2169,7 @@
         this.activeSubs = custom?.subData ? this.parseSubtitles(custom.subData) : [];
 
         if (custom?.videoUrl) {
+          this.saveToHistory(this.selectedAnime, epNum);
           let targetUrl = custom.videoUrl.trim();
           if (targetUrl.includes('<iframe')) {
             const m = targetUrl.match(/src="([^"]+)"/);
@@ -2170,27 +2210,60 @@
               syncBar.classList.add('hidden');
             }
           }
+        } else {
+          vid.classList.add('hidden');
+          syncBar.classList.add('hidden');
+          mountSlot.classList.remove('hidden');
+
+          const isOwner = this.currentUser && this.currentUser.email?.toLowerCase() === OWNER_EMAIL.toLowerCase();
+          mountSlot.innerHTML = `
+            <div class="w-full h-full flex flex-col items-center justify-center text-center p-6 bg-gradient-to-b from-[#131622] to-[#0b0c12] space-y-3">
+              <div class="w-12 h-12 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl animate-pulse">⏳</div>
+              <h3 class="text-base sm:text-xl font-black text-amber-300">Upload Episode — Episode ${epNum}</h3>
+              <p class="text-xs sm:text-sm text-slate-300 max-w-md">
+                මෙම Episode එක සඳහා Auto-Upload ක්‍රියාත්මක වෙමින් පවතී. විනාඩි 1–2ක් ඇතුළත වීඩියෝව ලැබෙනු ඇත.
+              </p>
+              <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+                <button onclick="app.refreshAndRetryEp(${epNum})" class="brand-accent text-white font-bold px-4 py-2 rounded-lg text-xs shadow transition">
+                  ↻ Check Episode Now
+                </button>
+                ${isOwner ? `<button onclick="app.openLogin()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-xs transition">+ Upload Now (Studio)</button>` : ''}
+              </div>
+            </div>
+          `;
         }
+      }
+
+      async refreshAndRetryEp(epNum) {
+        await this.loadSubbedDB();
+        this.playEp(epNum);
       }
 
       async requestSub() {
         if (!this.selectedAnime || !database) return;
+
+        // Paste your 2 Ad Direct Links inside adDirectLinks when ready
+        const adDirectLinks = [];
+        adDirectLinks.forEach(link => {
+          if (link) window.open(link, '_blank', 'noopener,noreferrer');
+        });
+
         const name = this.selectedAnime.title.english || this.selectedAnime.title.romaji;
         const requesterName = this.currentUser ? (this.currentUser.displayName || this.currentUser.email) : "Guest Viewer";
-        const btn = document.getElementById('reqBtn');
-        btn.disabled = true;
-        btn.textContent = "Requested ✓";
-        btn.className = "bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-bold px-5 py-2.5 rounded-lg text-sm flex items-center gap-2 cursor-not-allowed";
-        
+
+        this.requestedAnimeIds.add(String(this.selectedAnime.id));
+
         await addDoc(collection(database, "sub_requests"), { 
           name, 
           anilistId: this.selectedAnime.id, 
           posterUrl: this.selectedAnime.coverImage.large,
           totalEps: this.selectedAnime.episodes || 12,
           requestedBy: requesterName,
+          status: "pending",
           time: Date.now() 
         });
-        alert(`"${name}" සඳහා ඉල්ලීම යොමු කළා! Owner Studio හරහා සීසන් එකම Publish කළ වහාම නැරඹිය හැක.`);
+
+        this.openDetails();
       }
 
       goHome() {
@@ -2339,7 +2412,6 @@
           this.generateBulkRows();
           await this.loadSubbedDB();
 
-          // Auto-translate unsubbed episodes in sequence if Gemini key is saved
           const hasGeminiKey = document.getElementById('geminiApiKeyInput')?.value.trim() || localStorage.getItem('myjanime_gemini_key');
           if (unsubbedDocIds.length > 0 && hasGeminiKey) {
             const sel = document.getElementById('aiTargetDocSelect');
@@ -2484,7 +2556,6 @@
           document.getElementById('pubEp').value = Number(epNum) + 1;
           await this.loadSubbedDB();
 
-          // Automatically fetch & translate Sinhala subtitles if no manual file was provided
           if (!subRawText) {
             const sel = document.getElementById('aiTargetDocSelect');
             if (sel) {
@@ -2556,7 +2627,6 @@
         const sPad = String(seasonNum).padStart(2, '0');
         const epRegex = new RegExp(`(?:S${sPad}E${epPad}|E${epPad}|\\b${epPad}\\b)`, 'i');
 
-        // SOURCE 1: Subdl.com API
         if (subdlKey) {
           try {
             const searchUrl = `https://api.subdl.com/api/v1/subtitles?api_key=${encodeURIComponent(subdlKey)}&film_name=${encodeURIComponent(cleanTitle)}&languages=EN&season_number=${seasonNum}&type=tv`;
@@ -2594,12 +2664,9 @@
                 }
               }
             }
-          } catch (e) {
-            console.warn("Subdl fetch warning:", e);
-          }
+          } catch (e) {}
         }
 
-        // SOURCE 2: OpenSubtitles REST Fallback
         try {
           const query = encodeURIComponent(`${cleanTitle} S${sPad}E${epPad}`);
           const osRes = await fetch(`https://rest.opensubtitles.org/search/query-${query}/sublanguageid-eng`, {
@@ -2614,9 +2681,7 @@
               if (subRes.ok) return await subRes.text();
             }
           }
-        } catch (e) {
-          console.warn("OpenSubtitles fallback warning:", e);
-        }
+        } catch (e) {}
 
         return null;
       }
@@ -2655,44 +2720,55 @@
         try {
           let rawEngText = "";
           if (!isAutoTrigger && fileInput.files && fileInput.files[0]) {
-            progText.textContent = "Reading uploaded English subtitle file...";
+            progText.textContent = "Reading uploaded subtitle file...";
             rawEngText = await fileInput.files[0].text();
           } else {
-            progText.textContent = `Auto-searching English subtitles for ${animeTitle} Ep ${epNum}...`;
+            progText.textContent = `Auto-searching subtitles for ${animeTitle} Ep ${epNum}...`;
             rawEngText = await this.autoFetchEnglishSubtitle(animeTitle, epNum);
           }
 
           if (!rawEngText) {
-            throw new Error(`Episode published, but English subtitles were not found automatically for "${animeTitle} Ep ${epNum}". You can upload an .SRT/.ASS file manually in Step 3.`);
+            throw new Error(`Subtitle file was not found automatically for "${animeTitle} Ep ${epNum}". Please upload a .SRT or .ASS file in Step 3.`);
           }
 
           const parsedCues = this.parseSubtitlesForBot(rawEngText);
-          if (!parsedCues.length) throw new Error("No valid dialogue lines found in subtitle file.");
+          if (!parsedCues.length) throw new Error("No valid dialogue lines found in the subtitle file.");
 
-          const BATCH_SIZE = 35;
-          const totalBatches = Math.ceil(parsedCues.length / BATCH_SIZE);
-          let translatedCues = [];
-
-          for (let b = 0; b < totalBatches; b++) {
-            const batch = parsedCues.slice(b * BATCH_SIZE, (b + 1) * BATCH_SIZE);
-            const pct = Math.min(95, Math.round(15 + ((b / totalBatches) * 80)));
-            progBar.style.width = `${pct}%`;
-            progPercent.textContent = `${pct}%`;
-            progText.textContent = `Translating natural Sinhala dialogue (Part ${b + 1} of ${totalBatches})...`;
-
-            const translatedLines = await this.translateBatchWithGemini(apiKey, animeTitle, batch.map(c => c.text));
-            batch.forEach((cue, idx) => {
-              translatedCues.push({
-                index: cue.index,
-                timecode: cue.timecode,
-                text: translatedLines[idx] || cue.text
-              });
+          const BATCH_SIZE = 95;
+          const CONCURRENCY = 2;
+          const batches = [];
+          for (let i = 0; i < parsedCues.length; i += BATCH_SIZE) {
+            batches.push({
+              batchIndex: batches.length,
+              cues: parsedCues.slice(i, i + BATCH_SIZE)
             });
           }
 
+          let completedCount = 0;
+          const translatedByBatch = new Array(batches.length);
+
+          for (let startIdx = 0; startIdx < batches.length; startIdx += CONCURRENCY) {
+            const chunk = batches.slice(startIdx, startIdx + CONCURRENCY);
+            progText.textContent = `Translating subtitles in parallel (${Math.min(startIdx + CONCURRENCY, batches.length)} / ${batches.length})...`;
+
+            await Promise.all(chunk.map(async (bObj) => {
+              const translatedLines = await this.translateBatchWithGemini(apiKey, animeTitle, bObj.cues.map(c => c.text));
+              translatedByBatch[bObj.batchIndex] = bObj.cues.map((cue, idx) => ({
+                index: cue.index,
+                timecode: cue.timecode,
+                text: translatedLines[idx] || cue.text
+              }));
+              completedCount++;
+              const pct = Math.min(95, Math.round(15 + ((completedCount / batches.length) * 80)));
+              progBar.style.width = `${pct}%`;
+              progPercent.textContent = `${pct}%`;
+            }));
+          }
+
+          const translatedCues = translatedByBatch.flat();
           const finalSinhalaSrt = translatedCues.map(c => `${c.index}\n${c.timecode}\n${c.text}`).join('\n\n');
 
-          progText.textContent = "Saving Sinhala subtitles to Episode...";
+          progText.textContent = "Saving translated Sinhala subtitles to Episode...";
           progBar.style.width = '100%';
           progPercent.textContent = '100%';
 
@@ -2700,13 +2776,22 @@
             subData: finalSinhalaSrt
           });
 
+          await this.loadSubbedDB();
+
+          if (this.selectedAnime && `${this.selectedAnime.id}_${this.currentEpNum}` === docId) {
+            this.activeSubs = this.parseSubtitles(finalSinhalaSrt);
+            if (this.activeSubs.length > 0) {
+              document.getElementById('iframeSyncBar').classList.remove('hidden');
+              if (!this.iframeRunning) this.toggleIframeTimer();
+            }
+          }
+
           if (!isAutoTrigger) {
-            alert(`✅ සාර්ථකයි! "${animeTitle} - Episode ${epNum}" සඳහා ස්වභාවික සිංහල උපසිරැසි (Sinhala Subtitles) සාදා සම්බන්ධ කළා!`);
+            alert(`✅ සාර්ථකයි! "${animeTitle} - Episode ${epNum}" සඳහා සබ් ෆයිල් එක සිංහලට පරිවර්තනය වී සම්බන්ධ කළා!`);
             fileInput.value = '';
           } else {
-            alert(`✅ Episode ${epNum} Published & Auto-Translated into Sinhala Subtitles!`);
+            alert(`✅ Episode ${epNum} Published & Subtitle File Translated into Sinhala!`);
           }
-          await this.loadSubbedDB();
         } catch (err) {
           alert("AI Bot Notice: " + err.message);
         } finally {
@@ -2760,48 +2845,44 @@ STRICT RULES:
 3. Keep each line concise so viewers can read it quickly on screen.
 4. Maintain the EXACT line numbers [0], [1], [2]... in your output. Do not merge or skip lines. Output ONLY the translated numbered lines.`;
 
-        const models = ['gemini-3.8-flash', 'gemini-3.8-flash-lite', 'gemini-3.0-flash'];
+        const models = ['gemini-2.5-flash', 'gemini-3.8-flash-lite', 'gemini-3.8-flash'];
         let lastError = "Gemini API request failed.";
 
         for (const modelName of models) {
-          for (let attempt = 1; attempt <= 2; attempt++) {
-            try {
-              const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  systemInstruction: { parts: [{ text: systemPrompt }] },
-                  contents: [{ parts: [{ text: numberedInput }] }],
-                  generationConfig: { temperature: 0.35 }
-                })
-              });
+          try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                contents: [{ parts: [{ text: numberedInput }] }],
+                generationConfig: { temperature: 0.35 }
+              })
+            });
 
-              const data = await response.json();
-              if (!response.ok || data.error) {
-                lastError = data?.error?.message || `HTTP ${response.status}`;
-                if (lastError.toLowerCase().includes('high demand') || response.status === 503 || response.status === 429) {
-                  await new Promise(r => setTimeout(r, 2000));
-                  continue;
-                }
-                break;
+            const data = await response.json();
+            if (!response.ok || data.error) {
+              lastError = data?.error?.message || `HTTP ${response.status}`;
+              if (response.status === 429) {
+                await new Promise(r => setTimeout(r, 1500));
               }
-
-              const rawOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-              const resultMap = {};
-              rawOutput.split('\n').forEach(row => {
-                const match = row.match(/^\[(\d+)\]\s*(.+)$/);
-                if (match) {
-                  resultMap[Number(match[1])] = match[2].trim();
-                }
-              });
-
-              if (Object.keys(resultMap).length > 0) {
-                return linesArray.map((orig, idx) => resultMap[idx] || orig);
-              }
-            } catch (e) {
-              lastError = e.message;
-              await new Promise(r => setTimeout(r, 1500));
+              continue;
             }
+
+            const rawOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            const resultMap = {};
+            rawOutput.split('\n').forEach(row => {
+              const match = row.match(/^\[(\d+)\]\s*(.+)$/);
+              if (match) {
+                resultMap[Number(match[1])] = match[2].trim();
+              }
+            });
+
+            if (Object.keys(resultMap).length > 0) {
+              return linesArray.map((orig, idx) => resultMap[idx] || orig);
+            }
+          } catch (e) {
+            lastError = e.message;
           }
         }
 
